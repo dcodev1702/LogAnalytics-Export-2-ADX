@@ -1,4 +1,4 @@
-# LogAnalytics-Export-2-ADX
+# Export Log Analytics Workspace (LAW) Tables to Azure Data Explorer (ADX) via Event Hubs
 Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX) Database (DB) via Event Hubs <br />
 
 # Resources:
