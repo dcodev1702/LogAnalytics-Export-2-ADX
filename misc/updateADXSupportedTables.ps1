@@ -1,3 +1,5 @@
+# Courtesy of ChatGPT-4  :)
+
 # Initialize an empty array
 $tables = @()
 
