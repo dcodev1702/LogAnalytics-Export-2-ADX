@@ -7,6 +7,6 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 2. [Manual Table Export](https://github.com/javiersoriano/sentinel-scripts/blob/main/ADX/Create-TableInADX.ps1)
 3. [Programmatic Table Export](https://github.com/Azure/Azure-Sentinel/tree/master/Tools/AzureDataExplorer)
     * CAUTION: See my repo for an updated (24 JUN 2023) ADXSupportedTables.json
-    * CHECK FOR UPDATED TABLES [SupportedADXTables:](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-data-export?tabs=portal#supported-tables)
+    * CHECK FOR UPDATED TABLES [SupportedADXTables](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-data-export?tabs=portal#supported-tables)
   
 
