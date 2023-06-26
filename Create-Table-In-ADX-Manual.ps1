@@ -51,11 +51,11 @@ $CreateTable = @'
 $CreateFunction = @'
 .create-or-alter function {0}() {{
     {1}
-| mv-expand events = Records | where events.Type == $TableName
+| mv-expand events = Records | where events.Type == {3}
 | project 
 {2}
 }}
-'@ -f $TableExpandFunction, $TableRaw, $function
+'@ -f $TableExpandFunction, $TableRaw, $function, $TableName
 
 $CreatePolicyUpdate = @'
 .alter table {0} policy update @'[{{"Source": "{1}", "Query": "{2}()", "IsEnabled": true, "IsTransactional": true}}]'
