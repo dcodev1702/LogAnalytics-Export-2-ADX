@@ -29,10 +29,14 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    a. You can can export additional tables from Log Analytics using Javier's PowerShell script (Create-Table-In-ADX-Manual.ps1)
 
    ## Manually export tables from Log Analytics to Kusto commands to create ADX tables.
+   * Pre-req: You will need the PowerShell Azure Module installed
+      * Install-Module -Name Az -Scope User -Force
+      * .\Create-Table-In-ADX.ps1 -TableName <<Log-A table>> -WorkspaceId <<Your WorkspaceId>>
+      * Copy and Paste the output from this script into notepad
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/c7d54452-1dc9-49ea-be3a-edd489275a74)
 
 
-4. Go to the Database in your ADX Cluster and ONE BY ONE, run each Kusto command to import/create the corresponding tables exported from your LAW.
+5. Go to the Database in your ADX Cluster and ONE BY ONE, run each Kusto command to import/create the corresponding tables exported from your LAW.
     * CAUTION: See [ADXSupportedTables.json](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/blob/main/ADXSupportedTables.json) to ensure the table you're importing / creating in ADX can be exported via LAW.
     * LAW Tables can't be more than 47 characters log
     * [Custom Tables (CL's)](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-data-export?tabs=portal) can ONLY be exported via Data Collection Rules (HTTP REST API or Azure Monitor Agent/Extension)
@@ -41,12 +45,12 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    ## CREATE TABLES (exported from LAW) INTO ADX / Database
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/2c2ecd33-0a1b-45c0-b662-6ba386663c5b)
 
-5. Once your tables have been successfully created in your ADX database, you need to establish 'data connections' to EACH table you want to import via Event Hub.
+6. Once your tables have been successfully created in your ADX database, you need to establish 'data connections' to EACH table you want to import via Event Hub.
    ## EVENT HUB NAMESPACE: SecurityTables-1
       * Corresponding Event Hubs (created automatically from the LAW data export rule)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/e1680592-085a-480c-a30b-667748a4db1e)
 
-6. Data Connections within ADX Cluster / Database.  This is what connects to EACH of your Event Hubs and the RAW Tables ingest your data that resides within the Event Hubs. Each table
+7. Data Connections within ADX Cluster / Database.  This is what connects to EACH of your Event Hubs and the RAW Tables ingest your data that resides within the Event Hubs. Each table
    you export from Log Analytics to an Event Hub, will require a data connection from your ADX database, so the information can flow.
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/04ddd907-744b-4d7d-a1cd-305518ec4ff6)
 
