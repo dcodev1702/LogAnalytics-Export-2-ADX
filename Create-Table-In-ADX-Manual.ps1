@@ -48,16 +48,16 @@ $CreateTable = @'
 '@ -f $TableName, $schema
 
 $CreateFunction = @'
-.create-or-alter function {0} {{
+.create-or-alter function {0}() {{
     {1}
-| mv-expand events = Records
+| mv-expand events = Records | where events.Type == $TableName
 | project 
 {2}
 }}
 '@ -f $TableExpandFunction, $TableRaw, $function
 
 $CreatePolicyUpdate = @'
-.alter table {0} policy update @'[{{"Source": "{1}", "Query": "{2}()", "IsEnabled": "True", "IsTransactional": true}}]'
+.alter table {0} policy update @'[{{"Source": "{1}", "Query": "{2}()", "IsEnabled": true, "IsTransactional": true}}]'
 '@ -f $TableName, $TableRaw, $TableExpandFunction
 
 Write-Host -ForegroundColor Red 'Copy and run the following commands (one by one), on your Azure Data Explorer cluster query window to create the table, mappings and update policy:'
