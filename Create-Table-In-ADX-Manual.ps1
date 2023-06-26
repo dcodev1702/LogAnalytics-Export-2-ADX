@@ -51,7 +51,7 @@ $CreateTable = @'
 $CreateFunction = @'
 .create-or-alter function {0}() {{
     {1}
-| mv-expand events = Records | where events.Type == {3}
+| mv-expand events = Records | where events.Type == '{3}'
 | project 
 {2}
 }}
