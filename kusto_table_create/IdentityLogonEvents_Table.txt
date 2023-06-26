@@ -1,0 +1,16 @@
+.create table IdentityLogonEventsRaw (Records:dynamic)
+
+.create table IdentityLogonEventsRaw ingestion json mapping 'IdentityLogonEventsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table IdentityLogonEventsRaw policy retention softdelete = 0d
+
+.create table IdentityLogonEvents (TenantId:string,TimeGenerated:datetime,Timestamp:datetime,ActionType:string,Application:string,LogonType:string,Protocol:string,FailureReason:string,AccountName:string,AccountDomain:string,AccountUpn:string,AccountSid:string,AccountObjectId:string,AccountDisplayName:string,DeviceName:string,DeviceType:string,OSPlatform:string,IPAddress:string,Port:string,DestinationDeviceName:string,DestinationIPAddress:string,DestinationPort:string,TargetDeviceName:string,TargetAccountDisplayName:string,Location:string,ISP:string,ReportId:string,AdditionalFields:string,SourceSystem:string,Type:string)
+
+.create-or-alter function IdentityLogonEventsExpand() {
+    IdentityLogonEventsRaw
+| mv-expand events = Records | where events.Type == 'IdentityLogonEvents' and isnotempty(events.TimeGenerated)
+| project 
+TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),ActionType = tostring(events.ActionType),Application = tostring(events.Application),LogonType = tostring(events.LogonType),Protocol = tostring(events.Protocol),FailureReason = tostring(events.FailureReason),AccountName = tostring(events.AccountName),AccountDomain = tostring(events.AccountDomain),AccountUpn = tostring(events.AccountUpn),AccountSid = tostring(events.AccountSid),AccountObjectId = tostring(events.AccountObjectId),AccountDisplayName = tostring(events.AccountDisplayName),DeviceName = tostring(events.DeviceName),DeviceType = tostring(events.DeviceType),OSPlatform = tostring(events.OSPlatform),IPAddress = tostring(events.IPAddress),Port = tostring(events.Port),DestinationDeviceName = tostring(events.DestinationDeviceName),DestinationIPAddress = tostring(events.DestinationIPAddress),DestinationPort = tostring(events.DestinationPort),TargetDeviceName = tostring(events.TargetDeviceName),TargetAccountDisplayName = tostring(events.TargetAccountDisplayName),Location = tostring(events.Location),ISP = tostring(events.ISP),ReportId = tostring(events.ReportId),AdditionalFields = tostring(events.AdditionalFields),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table IdentityLogonEvents policy update @'[{"Source": "IdentityLogonEventsRaw", "Query": "IdentityLogonEventsExpand()", "IsEnabled": true, "IsTransactional": true}]'
