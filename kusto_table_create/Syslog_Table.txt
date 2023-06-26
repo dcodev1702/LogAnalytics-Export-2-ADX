@@ -1,0 +1,11 @@
+.create table SyslogRaw (Records:dynamic)
+
+.create table SyslogRaw ingestion json mapping 'SyslogRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table SyslogRaw policy retention softdelete = 0d
+
+.create table Syslog (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Computer:string,EventTime:datetime,Facility:string,HostName:string,SeverityLevel:string,SyslogMessage:string,ProcessID:string,HostIP:string,ProcessName:string,MG:string,Type:string,_ResourceId:string)
+
+.create-or-alter function SyslogExpand() { SyslogRaw| mv-expand events = Records| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Computer = tostring(events.Computer),EventTime = todatetime(events.EventTime),Facility = tostring(events.Facility),HostName = tostring(events.HostName),SeverityLevel = tostring(events.SeverityLevel),SyslogMessage = tostring(events.SyslogMessage),ProcessID = tostring(events.ProcessID),HostIP = tostring(events.HostIP),ProcessName = tostring(events.ProcessName),MG = tostring(events.MG),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)}
+
+.alter table Syslog policy update @'[{"Source": "SyslogRaw", "Query": "SyslogExpand()", "IsEnabled": true, "IsTransactional": true}]'
