@@ -1,3 +1,6 @@
+# Security Operations - Azure Cloud Architecture
+
+
 # Export Log Analytics tables to ADX via Event Hubs
 Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX) Database (DB) via Event Hubs <br />
 
