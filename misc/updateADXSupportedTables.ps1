@@ -4,7 +4,7 @@
 $tables = @()
 
 # Read the file line by line
-Get-Content "ADXSupportedTables2.txt" | ForEach-Object {
+Get-Content "ADXSupportedTables.txt" | ForEach-Object {
     # Add each line to the array
     $tables += $_.Trim()
 }
