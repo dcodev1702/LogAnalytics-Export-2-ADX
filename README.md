@@ -43,8 +43,6 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
     * CHECK FOR UPDATED TABLES -> [SupportedADXTables](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-data-export?tabs=portal#supported-tables)
 
    ## CREATE TABLES (exported from LAW) INTO ADX / Database
-   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/2c2ecd33-0a1b-45c0-b662-6ba386663c5b)
-
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/68ec1c3a-e4e4-449e-bf89-9d17b46d2dd9)
 
 
