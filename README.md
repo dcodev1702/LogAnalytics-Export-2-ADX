@@ -35,9 +35,6 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
       * Copy and Paste the output from this script into notepad
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/c7d54452-1dc9-49ea-be3a-edd489275a74)
 
-   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/e1b56b4e-e557-4dd4-b815-1f1dd3b879d0)
-
-
 
 5. Go to the Database in your ADX Cluster and ONE BY ONE, run each Kusto command to import/create the corresponding tables exported from your LAW.
     * CAUTION: See [ADXSupportedTables.json](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/blob/main/ADXSupportedTables.json) to ensure the table you're importing / creating in ADX can be exported via LAW.
