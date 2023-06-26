@@ -23,6 +23,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
       1. Each LAW can only have a max of 10 enabled rules.
   
    ## Log Analytics Workspace -- Data Export (blade)
+   * Recommend letting Azure Event Hub automatically determine the name of the Event Hub (e.g. am-<<exported table name>>)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/3edcd03f-0dcc-4112-ace3-0268bbd7bd4f)
 
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/287fd9ca-b424-49c6-ba32-a4b97dca29c8)
