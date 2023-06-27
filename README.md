@@ -45,7 +45,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    * Pre-req: You will need the PowerShell Azure Module installed
       * Install-Module -Name Az -Scope User -Force
       * .\Create-Table-In-ADX.ps1 -TableName [Log-A table] -WorkspaceId [Your WorkspaceId]
-      * Copy and Paste the output from this script into notepad
+      * Copy and Paste the output from this script into your editor of choice.
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/c7d54452-1dc9-49ea-be3a-edd489275a74)
 
 
