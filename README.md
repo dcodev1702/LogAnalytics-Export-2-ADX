@@ -19,6 +19,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 # Instructions:
 1. Register the Microsoft.insights resource provider (if not already done so).
    * You can check with the following PowerShell command (issue in cloud Shell if needed) <br />
+   
    '''console
     Get-AzResourceProvider | ? {$_.ProviderNamespace -eq 'Microsoft.Insights'}
    '''
