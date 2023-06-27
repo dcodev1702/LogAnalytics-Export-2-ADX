@@ -1,6 +1,7 @@
 # Author: Javier Soriano
 # Source: https://github.com/javiersoriano/sentinel-scripts/blob/main/ADX/Create-TableInADX.ps1
-# Slight modifications made on lines 52, 54, and 61 by DCODev1702
+# Slight modifications made on lines 52, 54, and 61 by DCODev1702 
+# Date: 26 June 2023
 
 PARAM(
     [Parameter(Mandatory=$true)]$TableName,  # The log lanlyics table you wish to have in ADX
