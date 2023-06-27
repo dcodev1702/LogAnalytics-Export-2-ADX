@@ -38,8 +38,8 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/287fd9ca-b424-49c6-ba32-a4b97dca29c8)
 
-6. Go to the "Kusto Table Create" directory and copy the commands from the tables you want to create in Azure Data Explorer (ADX)
-   a. You can can export additional tables from Log Analytics using Javier's PowerShell script (Create-Table-In-ADX-Manual.ps1)
+6. Go to the "Kusto Table Create" directory and copy the commands from the tables you want to create in Azure Data Explorer (ADX) <br />
+   a. You can can export additional tables from Log Analytics using Javier's PowerShell script: [Create-Table-In-ADX-Manual.ps1](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/blob/main/Create-Table-In-ADX-Manual.ps1)
 
    ## Manually export tables from Log Analytics to Kusto commands to create ADX tables.
    * Pre-req: You will need the PowerShell Azure Module installed
