@@ -70,7 +70,11 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    you export from Log Analytics to an Event Hub, will require a data connection from your ADX database, so the information can flow.
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/04ddd907-744b-4d7d-a1cd-305518ec4ff6)
 
-10. Be patient, it takes about 20 - 30 minutes before data begins to flow from Log Analytics to your Event Hubs and then into your ADX Database. <br />
+   ## ADX Database - Data Connection: Configuration | Settings
+   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/9a6c9a5e-ca04-4f6a-b3bf-e4f6c4f5430f)
+
+
+11. Be patient, it takes about 20 - 30 minutes before data begins to flow from Log Analytics to your Event Hubs and then into your ADX Database. <br />
 
    **_Querying the CommonSecurityLog table via Log Analytics_** <br />
    ![3A3CA9C2-AFE1-453A-80DD-C1A7954C8831](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/0560e336-8818-480b-8580-d1067a391aaa)
