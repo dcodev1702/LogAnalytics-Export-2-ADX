@@ -45,8 +45,9 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
     * [Custom Tables (CL's)](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-data-export?tabs=portal) can ONLY be exported via Data Collection Rules (HTTP REST API or Azure Monitor Agent/Extension)
     * CHECK FOR UPDATED TABLES -> [SupportedADXTables](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-data-export?tabs=portal#supported-tables)
 
-   ## CREATE TABLES (exported from LAW) INTO ADX / Database
-   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/68ec1c3a-e4e4-449e-bf89-9d17b46d2dd9)
+   ## MANUALLY CREATE TABLES (exported from LAW) INTO ADX / Database
+   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/16c738a3-1154-44e8-8255-36f708ac329b)
+
 
 
 7. Once your tables have been successfully created in your ADX database, you need to establish 'data connections' to EACH table you want to import via Event Hub.
