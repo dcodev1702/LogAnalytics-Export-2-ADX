@@ -1,8 +1,15 @@
-# Author: Javier Soriano
-# Source: https://github.com/javiersoriano/sentinel-scripts/blob/main/ADX/Create-TableInADX.ps1
-# Slight modifications made on lines 52, 54, and 61 by DCODev1702 
-# Date: 26 June 2023
+<# 
+Author: Javier Soriano
+Source: https://github.com/javiersoriano/sentinel-scripts/blob/main/ADX/Create-TableInADX.ps1
+Slight modifications made on lines 52, 54, and 61 by DCODev1702 
+Date: 26 June 2023
 
+THE SCRIPT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SCRIPT OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ #>
+ 
 PARAM(
     [Parameter(Mandatory=$true)]$TableName,  # The log lanlyics table you wish to have in ADX
     [Parameter(Mandatory=$true)]$WorkspaceId # The log lanlyics WorkspaceId
