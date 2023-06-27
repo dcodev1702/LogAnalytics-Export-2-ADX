@@ -63,7 +63,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 8. Once your tables have been successfully created in your ADX database, you need to establish 'data connections' to EACH table you want to import via Event Hub.
    ## EVENT HUB NAMESPACE: SecurityTables-1
    * Corresponding Event Hubs (created automatically from the LAW data export rule in (step 2))
-   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/f29a24ae-2efa-41e1-a6e3-f1b643ac0443)
+   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/0939913d-0e17-4081-a7d1-36e808b811ff)
 
 
 9. Data Connections within ADX Cluster / Database.  This is what connects to EACH of your Event Hubs and the RAW Tables ingest your data that resides within the Event Hubs. Each table
