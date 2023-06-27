@@ -1,7 +1,7 @@
 <# 
 Author: Javier Soriano
 Source: https://github.com/javiersoriano/sentinel-scripts/blob/main/ADX/Create-TableInADX.ps1
-Slight modifications made on lines 52, 54, and 61 by DCODev1702 
+Slight modifications made on lines 52, 54, 61, 88 - 100 by DCODev1702 
 Date: 26 June 2023
 
 THE SCRIPT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -81,3 +81,20 @@ Write-Host `r
 Write-Host -ForegroundColor Green $CreateFunction
 Write-Host `r
 Write-Host -ForegroundColor Green $CreatePolicyUpdate
+
+# Define the output file path, adjust it according to your need
+$filePath = ".\$TableName`_Table.txt"
+
+Write-Verbose "Creating file $filePath so it can be upload to Cloud Shell or archived for later use"
+# Use Add-Content to add text to the file
+Add-Content -Path $filePath -Value $CreateRawTable
+Add-Content -Path $filePath -Value "`r"
+Add-Content -Path $filePath -Value $CreateRawMapping
+Add-Content -Path $filePath -Value "`r"
+Add-Content -Path $filePath -Value $CreateRetention
+Add-Content -Path $filePath -Value "`r"
+Add-Content -Path $filePath -Value $CreateTable
+Add-Content -Path $filePath -Value "`r"
+Add-Content -Path $filePath -Value $CreateFunction
+Add-Content -Path $filePath -Value "`r"
+Add-Content -Path $filePath -Value $CreatePolicyUpdate
