@@ -67,7 +67,8 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/e325504a-d333-4db5-9755-2edb5e614839)
 
    **_Querying the CommonSecurityLog via Azure Data Explorer (ADX)_**
-   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/962d65f4-1524-4027-8f01-50ec3c6ac1d4)
+   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/cd1817e7-0925-4797-9d95-76fea0b3aad9)
+
 
 
 
