@@ -68,7 +68,8 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/0939913d-0e17-4081-a7d1-36e808b811ff)
 
 
-8. Data Connections within ADX Cluster / Database.  This is what connects to EACH of your Event Hubs and the RAW Tables ingest your data that resides within the Event Hubs. Each table
+8. Data Connections within ADX Cluster / Database.  <br />
+   This is what connects to EACH of your Event Hubs and the RAW Tables ingest your data that resides within the Event Hubs. Each table
    you export from Log Analytics to an Event Hub, will require a data connection from your ADX database, so the information can flow.
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/04ddd907-744b-4d7d-a1cd-305518ec4ff6)
 
