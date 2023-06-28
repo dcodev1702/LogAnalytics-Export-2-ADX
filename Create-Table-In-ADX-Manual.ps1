@@ -60,8 +60,7 @@ $CreateFunction = @'
 .create-or-alter function {0}() {{
     {1}
 | mv-expand events = Records | where events.Type == '{3}' and isnotempty(events.TimeGenerated)
-| project 
-{2}
+| project {2}
 }}
 '@ -f $TableExpandFunction, $TableRaw, $function, $TableName
 
