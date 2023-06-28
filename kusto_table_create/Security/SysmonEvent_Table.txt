@@ -1,0 +1,15 @@
+.create table SysmonEventRaw (Records:dynamic)
+
+.create table SysmonEventRaw ingestion json mapping 'SysmonEventRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table SysmonEventRaw policy retention softdelete = 0d
+
+.create table SysmonEvent (TenantId:string,TimeGenerated:datetime,SourceSystem:string,Computer:string,SysmonEventID:string,Activity:string,ManagementGroupName:string,ComputerEnvironment:string,SubscriptionId:string,ResourceGroup:string,ResourceProvider:string,Resource:string,ResourceId:string,ResourceType:string,ProcessGuid:string,ProcessId:string,Image:string,CommandLine:string,CurrentDirectory:string,User:string,LogonGuid:string,LogonId:string,TerminalSessionId:string,IntegrityLevel:string,SHA1Hash:string,SHA256Hash:string,MD5Hash:string,Imphash:string,ParentProcessGuid:string,ParentProcessId:string,ParentImage:string,ParentCommandLine:string,Type:string)
+
+.create-or-alter function SysmonEventExpand() {
+    SysmonEventRaw
+| mv-expand events = Records | where events.Type == 'SysmonEvent' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),SourceSystem = tostring(events.SourceSystem),Computer = tostring(events.Computer),SysmonEventID = tostring(events.SysmonEventID),Activity = tostring(events.Activity),ManagementGroupName = tostring(events.ManagementGroupName),ComputerEnvironment = tostring(events.ComputerEnvironment),SubscriptionId = tostring(events.SubscriptionId),ResourceGroup = tostring(events.ResourceGroup),ResourceProvider = tostring(events.ResourceProvider),Resource = tostring(events.Resource),ResourceId = tostring(events.ResourceId),ResourceType = tostring(events.ResourceType),ProcessGuid = tostring(events.ProcessGuid),ProcessId = tostring(events.ProcessId),Image = tostring(events.Image),CommandLine = tostring(events.CommandLine),CurrentDirectory = tostring(events.CurrentDirectory),User = tostring(events.User),LogonGuid = tostring(events.LogonGuid),LogonId = tostring(events.LogonId),TerminalSessionId = tostring(events.TerminalSessionId),IntegrityLevel = tostring(events.IntegrityLevel),SHA1Hash = tostring(events.SHA1Hash),SHA256Hash = tostring(events.SHA256Hash),MD5Hash = tostring(events.MD5Hash),Imphash = tostring(events.Imphash),ParentProcessGuid = tostring(events.ParentProcessGuid),ParentProcessId = tostring(events.ParentProcessId),ParentImage = tostring(events.ParentImage),ParentCommandLine = tostring(events.ParentCommandLine),Type = tostring(events.Type)
+}
+
+.alter table SysmonEvent policy update @'[{"Source": "SysmonEventRaw", "Query": "SysmonEventExpand()", "IsEnabled": true, "IsTransactional": true}]'
