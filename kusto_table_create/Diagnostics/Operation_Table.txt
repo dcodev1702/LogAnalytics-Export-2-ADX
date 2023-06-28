@@ -1,0 +1,15 @@
+.create table OperationRaw (Records:dynamic)
+
+.create table OperationRaw ingestion json mapping 'OperationRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table OperationRaw policy retention softdelete = 0d
+
+.create table Operation (TenantId:string,SourceSystem:string,TimeGenerated:datetime,OperationStatus:string,Detail:string,OperationCategory:string,OperationKey:string,ErrorId:string,CorrelationId:string,MG:string,ManagementGroupName:string,SourceComputerId:string,Computer:string,Solution:string,HelpLink:string,Type:string,_ResourceId:string)
+
+.create-or-alter function OperationExpand() {
+    OperationRaw
+| mv-expand events = Records | where events.Type == 'Operation' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),OperationStatus = tostring(events.OperationStatus),Detail = tostring(events.Detail),OperationCategory = tostring(events.OperationCategory),OperationKey = tostring(events.OperationKey),ErrorId = tostring(events.ErrorId),CorrelationId = tostring(events.CorrelationId),MG = tostring(events.MG),ManagementGroupName = tostring(events.ManagementGroupName),SourceComputerId = tostring(events.SourceComputerId),Computer = tostring(events.Computer),Solution = tostring(events.Solution),HelpLink = tostring(events.HelpLink),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table Operation policy update @'[{"Source": "OperationRaw", "Query": "OperationExpand()", "IsEnabled": true, "IsTransactional": true}]'

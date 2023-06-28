@@ -1,0 +1,15 @@
+.create table UsageRaw (Records:dynamic)
+
+.create table UsageRaw ingestion json mapping 'UsageRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table UsageRaw policy retention softdelete = 0d
+
+.create table Usage (TenantId:string,Computer:string,TimeGenerated:datetime,SourceSystem:string,StartTime:datetime,EndTime:datetime,ResourceUri:string,LinkedResourceUri:string,DataType:string,Solution:string,BatchesWithinSla:string,BatchesOutsideSla:string,BatchesCapped:string,TotalBatches:string,AvgLatencyInSeconds:string,Quantity:string,QuantityUnit:string,IsBillable:string,MeterId:string,LinkedMeterId:string,Type:string)
+
+.create-or-alter function UsageExpand() {
+    UsageRaw
+| mv-expand events = Records | where events.Type == 'Usage' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),Computer = tostring(events.Computer),TimeGenerated = todatetime(events.TimeGenerated),SourceSystem = tostring(events.SourceSystem),StartTime = todatetime(events.StartTime),EndTime = todatetime(events.EndTime),ResourceUri = tostring(events.ResourceUri),LinkedResourceUri = tostring(events.LinkedResourceUri),DataType = tostring(events.DataType),Solution = tostring(events.Solution),BatchesWithinSla = tostring(events.BatchesWithinSla),BatchesOutsideSla = tostring(events.BatchesOutsideSla),BatchesCapped = tostring(events.BatchesCapped),TotalBatches = tostring(events.TotalBatches),AvgLatencyInSeconds = tostring(events.AvgLatencyInSeconds),Quantity = tostring(events.Quantity),QuantityUnit = tostring(events.QuantityUnit),IsBillable = tostring(events.IsBillable),MeterId = tostring(events.MeterId),LinkedMeterId = tostring(events.LinkedMeterId),Type = tostring(events.Type)
+}
+
+.alter table Usage policy update @'[{"Source": "UsageRaw", "Query": "UsageExpand()", "IsEnabled": true, "IsTransactional": true}]'
