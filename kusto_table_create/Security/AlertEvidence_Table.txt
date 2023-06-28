@@ -1,0 +1,15 @@
+.create table AlertEvidenceRaw (Records:dynamic)
+
+.create table AlertEvidenceRaw ingestion json mapping 'AlertEvidenceRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AlertEvidenceRaw policy retention softdelete = 0d
+
+.create table AlertEvidence (TenantId:string,TimeGenerated:datetime,Timestamp:datetime,AlertId:string,Title:string,Categories:string,AttackTechniques:string,ServiceSource:string,DetectionSource:string,EntityType:string,EvidenceRole:string,EvidenceDirection:string,FileName:string,FolderPath:string,SHA1:string,SHA256:string,FileSize:string,ThreatFamily:string,RemoteIP:string,RemoteUrl:string,AccountName:string,AccountDomain:string,AccountSid:string,AccountObjectId:string,AccountUpn:string,DeviceId:string,DeviceName:string,LocalIP:string,NetworkMessageId:string,EmailSubject:string,ApplicationId:string,Application:string,OAuthApplicationId:string,ProcessCommandLine:string,AdditionalFields:string,RegistryKey:string,RegistryValueName:string,RegistryValueData:string,SourceSystem:string,Type:string)
+
+.create-or-alter function AlertEvidenceExpand() {
+    AlertEvidenceRaw
+| mv-expand events = Records | where events.Type == 'AlertEvidence' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),AlertId = tostring(events.AlertId),Title = tostring(events.Title),Categories = tostring(events.Categories),AttackTechniques = tostring(events.AttackTechniques),ServiceSource = tostring(events.ServiceSource),DetectionSource = tostring(events.DetectionSource),EntityType = tostring(events.EntityType),EvidenceRole = tostring(events.EvidenceRole),EvidenceDirection = tostring(events.EvidenceDirection),FileName = tostring(events.FileName),FolderPath = tostring(events.FolderPath),SHA1 = tostring(events.SHA1),SHA256 = tostring(events.SHA256),FileSize = tostring(events.FileSize),ThreatFamily = tostring(events.ThreatFamily),RemoteIP = tostring(events.RemoteIP),RemoteUrl = tostring(events.RemoteUrl),AccountName = tostring(events.AccountName),AccountDomain = tostring(events.AccountDomain),AccountSid = tostring(events.AccountSid),AccountObjectId = tostring(events.AccountObjectId),AccountUpn = tostring(events.AccountUpn),DeviceId = tostring(events.DeviceId),DeviceName = tostring(events.DeviceName),LocalIP = tostring(events.LocalIP),NetworkMessageId = tostring(events.NetworkMessageId),EmailSubject = tostring(events.EmailSubject),ApplicationId = tostring(events.ApplicationId),Application = tostring(events.Application),OAuthApplicationId = tostring(events.OAuthApplicationId),ProcessCommandLine = tostring(events.ProcessCommandLine),AdditionalFields = tostring(events.AdditionalFields),RegistryKey = tostring(events.RegistryKey),RegistryValueName = tostring(events.RegistryValueName),RegistryValueData = tostring(events.RegistryValueData),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table AlertEvidence policy update @'[{"Source": "AlertEvidenceRaw", "Query": "AlertEvidenceExpand()", "IsEnabled": true, "IsTransactional": true}]'

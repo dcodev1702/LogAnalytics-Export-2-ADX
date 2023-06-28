@@ -1,0 +1,15 @@
+.create table AlertInfoRaw (Records:dynamic)
+
+.create table AlertInfoRaw ingestion json mapping 'AlertInfoRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AlertInfoRaw policy retention softdelete = 0d
+
+.create table AlertInfo (TenantId:string,TimeGenerated:datetime,Timestamp:datetime,AlertId:string,Title:string,Category:string,Severity:string,ServiceSource:string,DetectionSource:string,AttackTechniques:string,SourceSystem:string,Type:string)
+
+.create-or-alter function AlertInfoExpand() {
+    AlertInfoRaw
+| mv-expand events = Records | where events.Type == 'AlertInfo' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),AlertId = tostring(events.AlertId),Title = tostring(events.Title),Category = tostring(events.Category),Severity = tostring(events.Severity),ServiceSource = tostring(events.ServiceSource),DetectionSource = tostring(events.DetectionSource),AttackTechniques = tostring(events.AttackTechniques),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table AlertInfo policy update @'[{"Source": "AlertInfoRaw", "Query": "AlertInfoExpand()", "IsEnabled": true, "IsTransactional": true}]'

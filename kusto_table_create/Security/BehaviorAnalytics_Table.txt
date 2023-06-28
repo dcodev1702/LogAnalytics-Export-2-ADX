@@ -1,0 +1,15 @@
+.create table BehaviorAnalyticsRaw (Records:dynamic)
+
+.create table BehaviorAnalyticsRaw ingestion json mapping 'BehaviorAnalyticsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table BehaviorAnalyticsRaw policy retention softdelete = 0d
+
+.create table BehaviorAnalytics (TenantId:string,SourceRecordId:string,TimeGenerated:datetime,TimeProcessed:datetime,ActivityType:string,ActionType:string,UserName:string,UserPrincipalName:string,EventSource:string,SourceIPAddress:string,SourceIPLocation:string,SourceDevice:string,DestinationIPAddress:string,DestinationIPLocation:string,DestinationDevice:string,EventVendor:string,EventProductVersion:string,ActorName:string,ActorPrincipalName:string,TargetName:string,TargetPrincipalName:string,Device:string,UsersInsights:string,DevicesInsights:string,ActivityInsights:string,SourceSystem:string,NativeTableName:string,InvestigationPriority:string,Type:string,_ResourceId:string)
+
+.create-or-alter function BehaviorAnalyticsExpand() {
+    BehaviorAnalyticsRaw
+| mv-expand events = Records | where events.Type == 'BehaviorAnalytics' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceRecordId = tostring(events.SourceRecordId),TimeGenerated = todatetime(events.TimeGenerated),TimeProcessed = todatetime(events.TimeProcessed),ActivityType = tostring(events.ActivityType),ActionType = tostring(events.ActionType),UserName = tostring(events.UserName),UserPrincipalName = tostring(events.UserPrincipalName),EventSource = tostring(events.EventSource),SourceIPAddress = tostring(events.SourceIPAddress),SourceIPLocation = tostring(events.SourceIPLocation),SourceDevice = tostring(events.SourceDevice),DestinationIPAddress = tostring(events.DestinationIPAddress),DestinationIPLocation = tostring(events.DestinationIPLocation),DestinationDevice = tostring(events.DestinationDevice),EventVendor = tostring(events.EventVendor),EventProductVersion = tostring(events.EventProductVersion),ActorName = tostring(events.ActorName),ActorPrincipalName = tostring(events.ActorPrincipalName),TargetName = tostring(events.TargetName),TargetPrincipalName = tostring(events.TargetPrincipalName),Device = tostring(events.Device),UsersInsights = tostring(events.UsersInsights),DevicesInsights = tostring(events.DevicesInsights),ActivityInsights = tostring(events.ActivityInsights),SourceSystem = tostring(events.SourceSystem),NativeTableName = tostring(events.NativeTableName),InvestigationPriority = tostring(events.InvestigationPriority),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table BehaviorAnalytics policy update @'[{"Source": "BehaviorAnalyticsRaw", "Query": "BehaviorAnalyticsExpand()", "IsEnabled": true, "IsTransactional": true}]'

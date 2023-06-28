@@ -1,0 +1,15 @@
+.create table SecurityAlertRaw (Records:dynamic)
+
+.create table SecurityAlertRaw ingestion json mapping 'SecurityAlertRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table SecurityAlertRaw policy retention softdelete = 0d
+
+.create table SecurityAlert (TenantId:string,TimeGenerated:datetime,DisplayName:string,AlertName:string,AlertSeverity:string,Description:string,ProviderName:string,VendorName:string,VendorOriginalId:string,SystemAlertId:string,ResourceId:string,SourceComputerId:string,AlertType:string,ConfidenceLevel:string,ConfidenceScore:string,IsIncident:string,StartTime:datetime,EndTime:datetime,ProcessingEndTime:datetime,RemediationSteps:string,ExtendedProperties:string,Entities:string,SourceSystem:string,WorkspaceSubscriptionId:string,WorkspaceResourceGroup:string,ExtendedLinks:string,ProductName:string,ProductComponentName:string,AlertLink:string,Status:string,CompromisedEntity:string,Tactics:string,Techniques:string,Type:string)
+
+.create-or-alter function SecurityAlertExpand() {
+    SecurityAlertRaw
+| mv-expand events = Records | where events.Type == 'SecurityAlert' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),DisplayName = tostring(events.DisplayName),AlertName = tostring(events.AlertName),AlertSeverity = tostring(events.AlertSeverity),Description = tostring(events.Description),ProviderName = tostring(events.ProviderName),VendorName = tostring(events.VendorName),VendorOriginalId = tostring(events.VendorOriginalId),SystemAlertId = tostring(events.SystemAlertId),ResourceId = tostring(events.ResourceId),SourceComputerId = tostring(events.SourceComputerId),AlertType = tostring(events.AlertType),ConfidenceLevel = tostring(events.ConfidenceLevel),ConfidenceScore = tostring(events.ConfidenceScore),IsIncident = tostring(events.IsIncident),StartTime = todatetime(events.StartTime),EndTime = todatetime(events.EndTime),ProcessingEndTime = todatetime(events.ProcessingEndTime),RemediationSteps = tostring(events.RemediationSteps),ExtendedProperties = tostring(events.ExtendedProperties),Entities = tostring(events.Entities),SourceSystem = tostring(events.SourceSystem),WorkspaceSubscriptionId = tostring(events.WorkspaceSubscriptionId),WorkspaceResourceGroup = tostring(events.WorkspaceResourceGroup),ExtendedLinks = tostring(events.ExtendedLinks),ProductName = tostring(events.ProductName),ProductComponentName = tostring(events.ProductComponentName),AlertLink = tostring(events.AlertLink),Status = tostring(events.Status),CompromisedEntity = tostring(events.CompromisedEntity),Tactics = tostring(events.Tactics),Techniques = tostring(events.Techniques),Type = tostring(events.Type)
+}
+
+.alter table SecurityAlert policy update @'[{"Source": "SecurityAlertRaw", "Query": "SecurityAlertExpand()", "IsEnabled": true, "IsTransactional": true}]'
