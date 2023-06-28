@@ -30,9 +30,10 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 4. Create an Event Hub Namespace with the appropriate Throughput Units (TU's - STD SKU is 22.00 per TU. Refer to [Event Hub pricing](https://learn.microsoft.com/en-us/azure/event-hubs/compare-tiers) for more details)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/aa24dbc5-30f4-44fa-a040-02950ae3a9bd)
 
-6. Identify the Log Analytics Workspace (LAW) you want to export your tables from using the 'data export' blade.
-   a. Create and enable an export rule.
-      1. Each LAW can only have a max of 10 enabled rules.
+6. Identify the Log Analytics Workspace (LAW) you want to export your tables from using the 'data export' blade. <br />
+   * Create and enable an export rule.
+   * Select the tables you want to export to an Event Hub Namespace
+   * Each LAW can only have a max of 10 "enabled" rules.
   
    ## Log Analytics Workspace -- Data Export (blade)
    * Recommend letting Azure Event Hub Namespace automatically determine the name of the Event Hub (e.g. am-[exported table name])
