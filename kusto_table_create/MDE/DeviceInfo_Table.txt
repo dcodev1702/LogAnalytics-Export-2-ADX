@@ -1,0 +1,15 @@
+.create table DeviceInfoRaw (Records:dynamic)
+
+.create table DeviceInfoRaw ingestion json mapping 'DeviceInfoRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table DeviceInfoRaw policy retention softdelete = 0d
+
+.create table DeviceInfo (TenantId:string,AdditionalFields:string,ClientVersion:string,DeviceId:string,DeviceName:string,DeviceObjectId:string,IsAzureADJoined:string,LoggedOnUsers:string,MachineGroup:string,OSArchitecture:string,OSBuild:string,OSPlatform:string,OSVersion:string,PublicIP:string,RegistryDeviceTag:string,ReportId:string,TimeGenerated:datetime,Timestamp:datetime,AadDeviceId:string,DeviceCategory:string,DeviceSubtype:string,DeviceType:string,JoinType:string,MergedDeviceIds:string,MergedToDeviceId:string,Model:string,OnboardingStatus:string,OSDistribution:string,OSVersionInfo:string,Vendor:string,SensorHealthState:string,IsExcluded:string,ExclusionReason:string,AssetValue:string,ExposureLevel:string,IsInternetFacing:string,SourceSystem:string,Type:string)
+
+.create-or-alter function DeviceInfoExpand() {
+    DeviceInfoRaw
+| mv-expand events = Records | where events.Type == 'DeviceInfo' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),AdditionalFields = tostring(events.AdditionalFields),ClientVersion = tostring(events.ClientVersion),DeviceId = tostring(events.DeviceId),DeviceName = tostring(events.DeviceName),DeviceObjectId = tostring(events.DeviceObjectId),IsAzureADJoined = tostring(events.IsAzureADJoined),LoggedOnUsers = tostring(events.LoggedOnUsers),MachineGroup = tostring(events.MachineGroup),OSArchitecture = tostring(events.OSArchitecture),OSBuild = tostring(events.OSBuild),OSPlatform = tostring(events.OSPlatform),OSVersion = tostring(events.OSVersion),PublicIP = tostring(events.PublicIP),RegistryDeviceTag = tostring(events.RegistryDeviceTag),ReportId = tostring(events.ReportId),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),AadDeviceId = tostring(events.AadDeviceId),DeviceCategory = tostring(events.DeviceCategory),DeviceSubtype = tostring(events.DeviceSubtype),DeviceType = tostring(events.DeviceType),JoinType = tostring(events.JoinType),MergedDeviceIds = tostring(events.MergedDeviceIds),MergedToDeviceId = tostring(events.MergedToDeviceId),Model = tostring(events.Model),OnboardingStatus = tostring(events.OnboardingStatus),OSDistribution = tostring(events.OSDistribution),OSVersionInfo = tostring(events.OSVersionInfo),Vendor = tostring(events.Vendor),SensorHealthState = tostring(events.SensorHealthState),IsExcluded = tostring(events.IsExcluded),ExclusionReason = tostring(events.ExclusionReason),AssetValue = tostring(events.AssetValue),ExposureLevel = tostring(events.ExposureLevel),IsInternetFacing = tostring(events.IsInternetFacing),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table DeviceInfo policy update @'[{"Source": "DeviceInfoRaw", "Query": "DeviceInfoExpand()", "IsEnabled": true, "IsTransactional": true}]'

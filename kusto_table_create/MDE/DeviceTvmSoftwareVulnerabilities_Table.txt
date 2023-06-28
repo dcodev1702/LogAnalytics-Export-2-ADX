@@ -1,0 +1,15 @@
+.create table DeviceTvmSoftwareVulnerabilitiesRaw (Records:dynamic)
+
+.create table DeviceTvmSoftwareVulnerabilitiesRaw ingestion json mapping 'DeviceTvmSoftwareVulnerabilitiesRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table DeviceTvmSoftwareVulnerabilitiesRaw policy retention softdelete = 0d
+
+.create table DeviceTvmSoftwareVulnerabilities (TenantId:string,DeviceId:string,DeviceName:string,OSPlatform:string,OSVersion:string,OSArchitecture:string,SoftwareVendor:string,SoftwareName:string,SoftwareVersion:string,CveId:string,VulnerabilitySeverityLevel:string,RecommendedSecurityUpdate:string,RecommendedSecurityUpdateId:string,TimeGenerated:datetime,CveTags:string,SourceSystem:string,Type:string)
+
+.create-or-alter function DeviceTvmSoftwareVulnerabilitiesExpand() {
+    DeviceTvmSoftwareVulnerabilitiesRaw
+| mv-expand events = Records | where events.Type == 'DeviceTvmSoftwareVulnerabilities' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),DeviceId = tostring(events.DeviceId),DeviceName = tostring(events.DeviceName),OSPlatform = tostring(events.OSPlatform),OSVersion = tostring(events.OSVersion),OSArchitecture = tostring(events.OSArchitecture),SoftwareVendor = tostring(events.SoftwareVendor),SoftwareName = tostring(events.SoftwareName),SoftwareVersion = tostring(events.SoftwareVersion),CveId = tostring(events.CveId),VulnerabilitySeverityLevel = tostring(events.VulnerabilitySeverityLevel),RecommendedSecurityUpdate = tostring(events.RecommendedSecurityUpdate),RecommendedSecurityUpdateId = tostring(events.RecommendedSecurityUpdateId),TimeGenerated = todatetime(events.TimeGenerated),CveTags = tostring(events.CveTags),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table DeviceTvmSoftwareVulnerabilities policy update @'[{"Source": "DeviceTvmSoftwareVulnerabilitiesRaw", "Query": "DeviceTvmSoftwareVulnerabilitiesExpand()", "IsEnabled": true, "IsTransactional": true}]'

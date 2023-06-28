@@ -1,0 +1,15 @@
+.create table DeviceTvmSoftwareVulnerabilitiesKBRaw (Records:dynamic)
+
+.create table DeviceTvmSoftwareVulnerabilitiesKBRaw ingestion json mapping 'DeviceTvmSoftwareVulnerabilitiesKBRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table DeviceTvmSoftwareVulnerabilitiesKBRaw policy retention softdelete = 0d
+
+.create table DeviceTvmSoftwareVulnerabilitiesKB (TenantId:string,TimeGenerated:datetime,Timestamp:datetime,CveId:string,CvssScore:string,IsExploitAvailable:string,VulnerabilitySeverityLevel:string,LastModifiedTime:datetime,PublishedDate:datetime,VulnerabilityDescription:string,AffectedSoftware:string,SourceSystem:string,Type:string)
+
+.create-or-alter function DeviceTvmSoftwareVulnerabilitiesKBExpand() {
+    DeviceTvmSoftwareVulnerabilitiesKBRaw
+| mv-expand events = Records | where events.Type == 'DeviceTvmSoftwareVulnerabilitiesKB' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),CveId = tostring(events.CveId),CvssScore = tostring(events.CvssScore),IsExploitAvailable = tostring(events.IsExploitAvailable),VulnerabilitySeverityLevel = tostring(events.VulnerabilitySeverityLevel),LastModifiedTime = todatetime(events.LastModifiedTime),PublishedDate = todatetime(events.PublishedDate),VulnerabilityDescription = tostring(events.VulnerabilityDescription),AffectedSoftware = tostring(events.AffectedSoftware),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table DeviceTvmSoftwareVulnerabilitiesKB policy update @'[{"Source": "DeviceTvmSoftwareVulnerabilitiesKBRaw", "Query": "DeviceTvmSoftwareVulnerabilitiesKBExpand()", "IsEnabled": true, "IsTransactional": true}]'

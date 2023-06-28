@@ -1,0 +1,15 @@
+.create table DeviceTvmSoftwareInventoryRaw (Records:dynamic)
+
+.create table DeviceTvmSoftwareInventoryRaw ingestion json mapping 'DeviceTvmSoftwareInventoryRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table DeviceTvmSoftwareInventoryRaw policy retention softdelete = 0d
+
+.create table DeviceTvmSoftwareInventory (TenantId:string,DeviceId:string,DeviceName:string,OSPlatform:string,OSVersion:string,OSArchitecture:string,SoftwareVendor:string,SoftwareName:string,SoftwareVersion:string,EndOfSupportStatus:string,EndOfSupportDate:datetime,ProductCodeCpe:string,TimeGenerated:datetime,SourceSystem:string,Type:string)
+
+.create-or-alter function DeviceTvmSoftwareInventoryExpand() {
+    DeviceTvmSoftwareInventoryRaw
+| mv-expand events = Records | where events.Type == 'DeviceTvmSoftwareInventory' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),DeviceId = tostring(events.DeviceId),DeviceName = tostring(events.DeviceName),OSPlatform = tostring(events.OSPlatform),OSVersion = tostring(events.OSVersion),OSArchitecture = tostring(events.OSArchitecture),SoftwareVendor = tostring(events.SoftwareVendor),SoftwareName = tostring(events.SoftwareName),SoftwareVersion = tostring(events.SoftwareVersion),EndOfSupportStatus = tostring(events.EndOfSupportStatus),EndOfSupportDate = todatetime(events.EndOfSupportDate),ProductCodeCpe = tostring(events.ProductCodeCpe),TimeGenerated = todatetime(events.TimeGenerated),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table DeviceTvmSoftwareInventory policy update @'[{"Source": "DeviceTvmSoftwareInventoryRaw", "Query": "DeviceTvmSoftwareInventoryExpand()", "IsEnabled": true, "IsTransactional": true}]'

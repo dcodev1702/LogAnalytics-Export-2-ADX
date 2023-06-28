@@ -1,0 +1,16 @@
+.create table DeviceNetworkInfoRaw (Records:dynamic)
+
+.create table DeviceNetworkInfoRaw ingestion json mapping 'DeviceNetworkInfoRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table DeviceNetworkInfoRaw policy retention softdelete = 0d
+
+.create table DeviceNetworkInfo (TenantId:string,ConnectedNetworks:string,DefaultGateways:string,DeviceId:string,DeviceName:string,DnsAddresses:string,IPAddresses:string,IPv4Dhcp:string,IPv6Dhcp:string,MacAddress:string,MachineGroup:string,NetworkAdapterName:string,NetworkAdapterStatus:string,NetworkAdapterType:string,ReportId:string,TimeGenerated:datetime,Timestamp:datetime,TunnelType:string,NetworkAdapterVendor:string,SourceSystem:string,Type:string)
+
+.create-or-alter function DeviceNetworkInfoExpand() {
+    DeviceNetworkInfoRaw
+| mv-expand events = Records | where events.Type == 'DeviceNetworkInfo' and isnotempty(events.TimeGenerated)
+| project 
+TenantId = tostring(events.TenantId),ConnectedNetworks = tostring(events.ConnectedNetworks),DefaultGateways = tostring(events.DefaultGateways),DeviceId = tostring(events.DeviceId),DeviceName = tostring(events.DeviceName),DnsAddresses = tostring(events.DnsAddresses),IPAddresses = tostring(events.IPAddresses),IPv4Dhcp = tostring(events.IPv4Dhcp),IPv6Dhcp = tostring(events.IPv6Dhcp),MacAddress = tostring(events.MacAddress),MachineGroup = tostring(events.MachineGroup),NetworkAdapterName = tostring(events.NetworkAdapterName),NetworkAdapterStatus = tostring(events.NetworkAdapterStatus),NetworkAdapterType = tostring(events.NetworkAdapterType),ReportId = tostring(events.ReportId),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),TunnelType = tostring(events.TunnelType),NetworkAdapterVendor = tostring(events.NetworkAdapterVendor),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table DeviceNetworkInfo policy update @'[{"Source": "DeviceNetworkInfoRaw", "Query": "DeviceNetworkInfoExpand()", "IsEnabled": true, "IsTransactional": true}]'
