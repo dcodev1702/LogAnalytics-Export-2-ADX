@@ -1,0 +1,15 @@
+.create table McasShadowItReportingRaw (Records:dynamic)
+
+.create table McasShadowItReportingRaw ingestion json mapping 'McasShadowItReportingRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table McasShadowItReportingRaw policy retention softdelete = 0d
+
+.create table McasShadowItReporting (TenantId:string,SourceSystem:string,TimeGenerated:datetime,StreamName:string,MachineName:string,MachineId:string,TotalEvents:string,BlockedEvents:string,UploadedBytes:string,TotalBytes:string,DownloadedBytes:string,IpAddress:string,UserName:string,EnrichedUserName:string,AppName:string,AppId:string,AppInstance:string,AppCategory:string,AppTags:string,AppScore:string,Date:datetime,RawUserName:string,RichUserName:string,AadTenantId:string,Type:string)
+
+.create-or-alter function McasShadowItReportingExpand() {
+    McasShadowItReportingRaw
+| mv-expand events = Records | where events.Type == 'McasShadowItReporting' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),StreamName = tostring(events.StreamName),MachineName = tostring(events.MachineName),MachineId = tostring(events.MachineId),TotalEvents = tostring(events.TotalEvents),BlockedEvents = tostring(events.BlockedEvents),UploadedBytes = tostring(events.UploadedBytes),TotalBytes = tostring(events.TotalBytes),DownloadedBytes = tostring(events.DownloadedBytes),IpAddress = tostring(events.IpAddress),UserName = tostring(events.UserName),EnrichedUserName = tostring(events.EnrichedUserName),AppName = tostring(events.AppName),AppId = tostring(events.AppId),AppInstance = tostring(events.AppInstance),AppCategory = tostring(events.AppCategory),AppTags = tostring(events.AppTags),AppScore = tostring(events.AppScore),Date = todatetime(events.Date),RawUserName = tostring(events.RawUserName),RichUserName = tostring(events.RichUserName),AadTenantId = tostring(events.AadTenantId),Type = tostring(events.Type)
+}
+
+.alter table McasShadowItReporting policy update @'[{"Source": "McasShadowItReportingRaw", "Query": "McasShadowItReportingExpand()", "IsEnabled": true, "IsTransactional": true}]'

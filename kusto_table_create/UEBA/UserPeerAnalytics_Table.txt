@@ -1,0 +1,15 @@
+.create table UserPeerAnalyticsRaw (Records:dynamic)
+
+.create table UserPeerAnalyticsRaw ingestion json mapping 'UserPeerAnalyticsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table UserPeerAnalyticsRaw policy retention softdelete = 0d
+
+.create table UserPeerAnalytics (TenantId:string,TimeGenerated:datetime,AADTenantId:string,UserId:string,UserPrincipalName:string,UserName:string,PeerUserId:string,PeerUserPrincipalName:string,PeerUserName:string,Rank:string,SourceSystem:string,Type:string,_ResourceId:string)
+
+.create-or-alter function UserPeerAnalyticsExpand() {
+    UserPeerAnalyticsRaw
+| mv-expand events = Records | where events.Type == 'UserPeerAnalytics' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),AADTenantId = tostring(events.AADTenantId),UserId = tostring(events.UserId),UserPrincipalName = tostring(events.UserPrincipalName),UserName = tostring(events.UserName),PeerUserId = tostring(events.PeerUserId),PeerUserPrincipalName = tostring(events.PeerUserPrincipalName),PeerUserName = tostring(events.PeerUserName),Rank = tostring(events.Rank),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table UserPeerAnalytics policy update @'[{"Source": "UserPeerAnalyticsRaw", "Query": "UserPeerAnalyticsExpand()", "IsEnabled": true, "IsTransactional": true}]'

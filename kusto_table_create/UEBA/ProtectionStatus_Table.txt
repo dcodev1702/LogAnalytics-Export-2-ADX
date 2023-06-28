@@ -1,0 +1,15 @@
+.create table ProtectionStatusRaw (Records:dynamic)
+
+.create table ProtectionStatusRaw ingestion json mapping 'ProtectionStatusRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ProtectionStatusRaw policy retention softdelete = 0d
+
+.create table ProtectionStatus (TenantId:string,SourceSystem:string,TimeGenerated:datetime,SourceComputerId:string,DeviceName:string,DetectionId:string,OSName:string,Threat:string,ThreatStatusRank:string,ThreatStatus:string,ThreatStatusDetails:string,ProtectionStatusRank:string,ProtectionStatus:string,ProtectionStatusDetails:string,SignatureVersion:string,TypeofProtection:string,ScanDate:datetime,DateCollected:string,AMProductVersion:string,MG:string,ManagementGroupName:string,Computer:string,ComputerIP_Hidden:string,ResourceId:string,ComputerEnvironment:string,Resource:string,SubscriptionId:string,ResourceGroup:string,ResourceProvider:string,ResourceType:string,VMUUID:string,Type:string,_ResourceId:string)
+
+.create-or-alter function ProtectionStatusExpand() {
+    ProtectionStatusRaw
+| mv-expand events = Records | where events.Type == 'ProtectionStatus' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),SourceComputerId = tostring(events.SourceComputerId),DeviceName = tostring(events.DeviceName),DetectionId = tostring(events.DetectionId),OSName = tostring(events.OSName),Threat = tostring(events.Threat),ThreatStatusRank = tostring(events.ThreatStatusRank),ThreatStatus = tostring(events.ThreatStatus),ThreatStatusDetails = tostring(events.ThreatStatusDetails),ProtectionStatusRank = tostring(events.ProtectionStatusRank),ProtectionStatus = tostring(events.ProtectionStatus),ProtectionStatusDetails = tostring(events.ProtectionStatusDetails),SignatureVersion = tostring(events.SignatureVersion),TypeofProtection = tostring(events.TypeofProtection),ScanDate = todatetime(events.ScanDate),DateCollected = tostring(events.DateCollected),AMProductVersion = tostring(events.AMProductVersion),MG = tostring(events.MG),ManagementGroupName = tostring(events.ManagementGroupName),Computer = tostring(events.Computer),ComputerIP_Hidden = tostring(events.ComputerIP_Hidden),ResourceId = tostring(events.ResourceId),ComputerEnvironment = tostring(events.ComputerEnvironment),Resource = tostring(events.Resource),SubscriptionId = tostring(events.SubscriptionId),ResourceGroup = tostring(events.ResourceGroup),ResourceProvider = tostring(events.ResourceProvider),ResourceType = tostring(events.ResourceType),VMUUID = tostring(events.VMUUID),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ProtectionStatus policy update @'[{"Source": "ProtectionStatusRaw", "Query": "ProtectionStatusExpand()", "IsEnabled": true, "IsTransactional": true}]'
