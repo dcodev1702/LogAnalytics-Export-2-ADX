@@ -71,7 +71,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 8. Data Connections within ADX Cluster / Database. <br />
    This is what connects to EACH of your Event Hubs. <br />
    The RAW Tables ingest the data that reside within the Event Hubs. The mapping function uses the RAW table (Record:dynamic) to map to the defined columns of the actual table with the following constraints: <br />
-        *  events.Type == $TableName and the TimeGenerated value is not empty (null).
+        * events.Type == $TableName and the TimeGenerated value is not empty (null). <br />
    Once the data connections are defined and successfully created the information will flow from the specified Event Hubs into their assigned ADX DB tables.
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/04ddd907-744b-4d7d-a1cd-305518ec4ff6)
 
