@@ -36,7 +36,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
   
    ## Log Analytics Workspace -- Data Export (blade)
    * Recommend letting Azure Event Hub Namespace automatically determine the name of the Event Hub (e.g. am-[exported table name])
-   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/3a73d4b1-0b27-419a-b101-850cd3561e8a)
+   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/889b466d-e39e-42fb-b961-1cc37bc00309)
 
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/287fd9ca-b424-49c6-ba32-a4b97dca29c8)
 
