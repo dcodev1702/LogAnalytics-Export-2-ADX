@@ -28,7 +28,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 
 3. Create an [Azure Data Explorer (ADX) Cluster and Database](https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-database-portal) where your exported tables (from Log Analytics) will reside.
 4. Create an Event Hub Namespace with the appropriate Throughput Units (TU's - STD SKU is 22.00 per TU. Refer to [Event Hub pricing](https://learn.microsoft.com/en-us/azure/event-hubs/compare-tiers) for more details)
-5. Identify the Log Analytics Workspace (LAW) you want to export your tables from use the 'data export' blade.
+5. Identify the Log Analytics Workspace (LAW) you want to export your tables from using the 'data export' blade.
    a. Create and enable an export rule.
       1. Each LAW can only have a max of 10 enabled rules.
   
