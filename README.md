@@ -26,11 +26,11 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 
    ![Image 6-24-23 at 10 55 PM](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/af00c1d3-a7c6-40e1-8409-256cfc953ed4)
 
-3. Create an [Azure Data Explorer (ADX) Cluster and Database](https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-database-portal) where your exported tables (from Log Analytics) will reside.
-4. Create an Event Hub Namespace with the appropriate Throughput Units (TU's - STD SKU is 22.00 per TU. Refer to [Event Hub pricing](https://learn.microsoft.com/en-us/azure/event-hubs/compare-tiers) for more details)
+2. Create an [Azure Data Explorer (ADX) Cluster and Database](https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-database-portal) where your exported tables (from Log Analytics) will reside.
+3. Create an Event Hub Namespace with the appropriate Throughput Units (TU's - STD SKU is 22.00 per TU. Refer to [Event Hub pricing](https://learn.microsoft.com/en-us/azure/event-hubs/compare-tiers) for more details)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/aa24dbc5-30f4-44fa-a040-02950ae3a9bd)
 
-6. Identify the Log Analytics Workspace (LAW) you want to export your tables from using the 'data export' blade. <br />
+4. Identify the Log Analytics Workspace (LAW) you want to export your tables from using the 'data export' blade. <br />
    * Create and enable an export rule.
    * Select the tables you want to export to an Event Hub Namespace
    * Each LAW can only have a max of 10 "enabled" rules.
@@ -41,7 +41,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/287fd9ca-b424-49c6-ba32-a4b97dca29c8)
 
-7. Go to the "Kusto Table Create" directory and copy the commands from the tables you want to create in Azure Data Explorer (ADX) <br />
+5. Go to the "Kusto Table Create" directory and copy the commands from the tables you want to create in Azure Data Explorer (ADX) <br />
    a. You can can export additional tables from Log Analytics using Javier's PowerShell script: [Create-Table-In-ADX-Manual.ps1](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/blob/main/Create-Table-In-ADX-Manual.ps1)
 
    ## Manually export tables from Log Analytics to Kusto commands to create ADX tables.
@@ -52,7 +52,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/c7d54452-1dc9-49ea-be3a-edd489275a74)
 
 
-8. Go to the Database in your ADX Cluster and ONE BY ONE, run each Kusto command to import/create the corresponding tables exported from your LAW.
+6. Go to the Database in your ADX Cluster and ONE BY ONE, run each Kusto command to import/create the corresponding tables exported from your LAW.
     * CAUTION: See [ADXSupportedTables.json](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/blob/main/ADXSupportedTables.json) to ensure the table you're importing / creating in ADX can be exported via LAW.
     * LAW Tables can't be more than 47 characters log
     * [Custom Tables (CL's)](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-data-export?tabs=portal) can ONLY be exported via Data Collection Rules (HTTP REST API or Azure Monitor Agent/Extension)
@@ -63,13 +63,13 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 
 
 
-9. Once your tables have been successfully created in your ADX database, you need to establish 'data connections' to EACH table you want to import via Event Hub.
+7. Once your tables have been successfully created in your ADX database, you need to establish 'data connections' to EACH table you want to import via Event Hub.
    ## EVENT HUB NAMESPACE: SecurityTables-1
    * Corresponding Event Hubs (created automatically from the LAW data export rule in (step 2))
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/0939913d-0e17-4081-a7d1-36e808b811ff)
 
 
-10. Data Connections within ADX Cluster / Database.  This is what connects to EACH of your Event Hubs and the RAW Tables ingest your data that resides within the Event Hubs. Each table
+8. Data Connections within ADX Cluster / Database.  This is what connects to EACH of your Event Hubs and the RAW Tables ingest your data that resides within the Event Hubs. Each table
    you export from Log Analytics to an Event Hub, will require a data connection from your ADX database, so the information can flow.
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/04ddd907-744b-4d7d-a1cd-305518ec4ff6)
 
