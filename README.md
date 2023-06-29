@@ -1,6 +1,5 @@
 <p align="center">
-# Security Operations - Azure Cloud Architecture 
-<p/>
+# Security Operations - Azure Cloud Architecture <p/>
 ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/a043829b-8640-48c1-9391-e9abca8a96cc)
 
 
