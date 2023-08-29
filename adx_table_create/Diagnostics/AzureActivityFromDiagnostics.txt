@@ -1,0 +1,4 @@
+// Create mapping command
+////////////////////////////////////////////////////////////
+.create table ['AzureActivity'] ingestion json mapping 'AzureActivity_mapping' '[{"column":"records", "Properties":{"Path":"$[\'records\']"}}]'
+
