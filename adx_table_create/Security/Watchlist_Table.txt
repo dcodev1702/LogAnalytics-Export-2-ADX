@@ -1,0 +1,15 @@
+.create table WatchlistRaw (Records:dynamic)
+
+.create table WatchlistRaw ingestion json mapping 'WatchlistRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table WatchlistRaw policy retention softdelete = 0d
+
+.create table Watchlist (TenantId:string,TimeGenerated:datetime,AzureTenantId:string,WatchlistId:string,WatchlistItemId:string,WatchlistName:string,WatchlistAlias:string,Source:string,Provider:string,CreatedBy:string,UpdatedBy:string,CreatedTimeUTC:datetime,LastUpdatedTimeUTC:datetime,Notes:string,Tags:string,DefaultDuration:string,TimeToLive:datetime,WatchlistItem:string,EntityMapping:string,CorrelationId:string,SearchKey:string,WatchlistCategory:string,_DTTimestamp:datetime,_DTItemId:string,_DTItemType:string,_DTItemStatus:string,SourceSystem:string,Type:string)
+
+.create-or-alter function WatchlistExpand() {
+    WatchlistRaw
+| mv-expand events = Records | where events.Type == 'Watchlist' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),AzureTenantId = tostring(events.AzureTenantId),WatchlistId = tostring(events.WatchlistId),WatchlistItemId = tostring(events.WatchlistItemId),WatchlistName = tostring(events.WatchlistName),WatchlistAlias = tostring(events.WatchlistAlias),Source = tostring(events.Source),Provider = tostring(events.Provider),CreatedBy = tostring(events.CreatedBy),UpdatedBy = tostring(events.UpdatedBy),CreatedTimeUTC = todatetime(events.CreatedTimeUTC),LastUpdatedTimeUTC = todatetime(events.LastUpdatedTimeUTC),Notes = tostring(events.Notes),Tags = tostring(events.Tags),DefaultDuration = tostring(events.DefaultDuration),TimeToLive = todatetime(events.TimeToLive),WatchlistItem = tostring(events.WatchlistItem),EntityMapping = tostring(events.EntityMapping),CorrelationId = tostring(events.CorrelationId),SearchKey = tostring(events.SearchKey),WatchlistCategory = tostring(events.WatchlistCategory),_DTTimestamp = todatetime(events._DTTimestamp),_DTItemId = tostring(events._DTItemId),_DTItemType = tostring(events._DTItemType),_DTItemStatus = tostring(events._DTItemStatus),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table Watchlist policy update @'[{"Source": "WatchlistRaw", "Query": "WatchlistExpand()", "IsEnabled": true, "IsTransactional": true}]'
