@@ -1,0 +1,15 @@
+.create table SecurityBaselineRaw (Records:dynamic)
+
+.create table SecurityBaselineRaw ingestion json mapping 'SecurityBaselineRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table SecurityBaselineRaw policy retention softdelete = 0d
+
+.create table SecurityBaseline (TenantId:string,SourceSystem:string,MG:string,ManagementGroupName:string,SourceComputerId:string,TimeGenerated:datetime,SubscriptionId:string,ResourceGroup:string,ResourceProvider:string,Resource:string,ResourceId:string,ResourceType:string,ComputerEnvironment:string,Computer:string,BaselineId:string,BaselineType:string,OSName:string,AssessmentId:string,TimeAnalyzed:datetime,CceId:string,AzId:string,RuleSeverity:string,BaselineRuleType:string,Description:string,RuleSetting:string,ExpectedResult:string,ActualResult:string,AnalyzeResult:string,BaselineRuleId:string,SitePath:string,AnalyzeOperation:string,Type:string,_ResourceId:string)
+
+.create-or-alter function SecurityBaselineExpand() {
+    SecurityBaselineRaw
+| mv-expand events = Records | where events.Type == 'SecurityBaseline' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),MG = tostring(events.MG),ManagementGroupName = tostring(events.ManagementGroupName),SourceComputerId = tostring(events.SourceComputerId),TimeGenerated = todatetime(events.TimeGenerated),SubscriptionId = tostring(events.SubscriptionId),ResourceGroup = tostring(events.ResourceGroup),ResourceProvider = tostring(events.ResourceProvider),Resource = tostring(events.Resource),ResourceId = tostring(events.ResourceId),ResourceType = tostring(events.ResourceType),ComputerEnvironment = tostring(events.ComputerEnvironment),Computer = tostring(events.Computer),BaselineId = tostring(events.BaselineId),BaselineType = tostring(events.BaselineType),OSName = tostring(events.OSName),AssessmentId = tostring(events.AssessmentId),TimeAnalyzed = todatetime(events.TimeAnalyzed),CceId = tostring(events.CceId),AzId = tostring(events.AzId),RuleSeverity = tostring(events.RuleSeverity),BaselineRuleType = tostring(events.BaselineRuleType),Description = tostring(events.Description),RuleSetting = tostring(events.RuleSetting),ExpectedResult = tostring(events.ExpectedResult),ActualResult = tostring(events.ActualResult),AnalyzeResult = tostring(events.AnalyzeResult),BaselineRuleId = tostring(events.BaselineRuleId),SitePath = tostring(events.SitePath),AnalyzeOperation = tostring(events.AnalyzeOperation),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table SecurityBaseline policy update @'[{"Source": "SecurityBaselineRaw", "Query": "SecurityBaselineExpand()", "IsEnabled": true, "IsTransactional": true}]'
