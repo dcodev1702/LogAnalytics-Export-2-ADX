@@ -1,0 +1,15 @@
+.create table SecurityBaselineSummaryRaw (Records:dynamic)
+
+.create table SecurityBaselineSummaryRaw ingestion json mapping 'SecurityBaselineSummaryRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table SecurityBaselineSummaryRaw policy retention softdelete = 0d
+
+.create table SecurityBaselineSummary (TenantId:string,SourceSystem:string,MG:string,ManagementGroupName:string,SourceComputerId:string,TimeGenerated:datetime,SubscriptionId:string,ResourceGroup:string,ResourceProvider:string,Resource:string,ResourceId:string,ResourceType:string,ComputerEnvironment:string,Computer:string,BaselineId:string,BaselineType:string,OSName:string,AssessmentId:string,TotalAssessedRules:string,PercentageOfPassedRules:string,CriticalFailedRules:string,WarningFailedRules:string,InformationalFailedRules:string,Type:string,_ResourceId:string)
+
+.create-or-alter function SecurityBaselineSummaryExpand() {
+    SecurityBaselineSummaryRaw
+| mv-expand events = Records | where events.Type == 'SecurityBaselineSummary' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),MG = tostring(events.MG),ManagementGroupName = tostring(events.ManagementGroupName),SourceComputerId = tostring(events.SourceComputerId),TimeGenerated = todatetime(events.TimeGenerated),SubscriptionId = tostring(events.SubscriptionId),ResourceGroup = tostring(events.ResourceGroup),ResourceProvider = tostring(events.ResourceProvider),Resource = tostring(events.Resource),ResourceId = tostring(events.ResourceId),ResourceType = tostring(events.ResourceType),ComputerEnvironment = tostring(events.ComputerEnvironment),Computer = tostring(events.Computer),BaselineId = tostring(events.BaselineId),BaselineType = tostring(events.BaselineType),OSName = tostring(events.OSName),AssessmentId = tostring(events.AssessmentId),TotalAssessedRules = tostring(events.TotalAssessedRules),PercentageOfPassedRules = tostring(events.PercentageOfPassedRules),CriticalFailedRules = tostring(events.CriticalFailedRules),WarningFailedRules = tostring(events.WarningFailedRules),InformationalFailedRules = tostring(events.InformationalFailedRules),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table SecurityBaselineSummary policy update @'[{"Source": "SecurityBaselineSummaryRaw", "Query": "SecurityBaselineSummaryExpand()", "IsEnabled": true, "IsTransactional": true}]'
