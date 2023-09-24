@@ -1,0 +1,15 @@
+.create table KubeNodeInventoryRaw (Records:dynamic)
+
+.create table KubeNodeInventoryRaw ingestion json mapping 'KubeNodeInventoryRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table KubeNodeInventoryRaw policy retention softdelete = 0d
+
+.create table KubeNodeInventory (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Computer:string,ClusterName:string,ClusterId:string,LastTransitionTimeReady:datetime,Labels:string,Status:string,KubeletVersion:string,KubeProxyVersion:string,CreationTimeStamp:datetime,KubernetesProviderID:string,OperatingSystem:string,DockerVersion:string,Type:string,_ResourceId:string)
+
+.create-or-alter function KubeNodeInventoryExpand() {
+    KubeNodeInventoryRaw
+| mv-expand events = Records | where events.Type == 'KubeNodeInventory' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Computer = tostring(events.Computer),ClusterName = tostring(events.ClusterName),ClusterId = tostring(events.ClusterId),LastTransitionTimeReady = todatetime(events.LastTransitionTimeReady),Labels = tostring(events.Labels),Status = tostring(events.Status),KubeletVersion = tostring(events.KubeletVersion),KubeProxyVersion = tostring(events.KubeProxyVersion),CreationTimeStamp = todatetime(events.CreationTimeStamp),KubernetesProviderID = tostring(events.KubernetesProviderID),OperatingSystem = tostring(events.OperatingSystem),DockerVersion = tostring(events.DockerVersion),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table KubeNodeInventory policy update @'[{"Source": "KubeNodeInventoryRaw", "Query": "KubeNodeInventoryExpand()", "IsEnabled": true, "IsTransactional": true}]'

@@ -1,0 +1,15 @@
+.create table ContainerInventoryRaw (Records:dynamic)
+
+.create table ContainerInventoryRaw ingestion json mapping 'ContainerInventoryRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ContainerInventoryRaw policy retention softdelete = 0d
+
+.create table ContainerInventory (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Computer:string,ContainerID:string,Name:string,ContainerHostname:string,ImageID:string,Repository:string,Image:string,ImageTag:string,ContainerState:string,Ports:string,Links:string,ExitCode:string,ComposeGroup:string,EnvironmentVar:string,Command:string,CreatedTime:datetime,StartedTime:datetime,FinishedTime:datetime,Type:string,_ResourceId:string)
+
+.create-or-alter function ContainerInventoryExpand() {
+    ContainerInventoryRaw
+| mv-expand events = Records | where events.Type == 'ContainerInventory' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Computer = tostring(events.Computer),ContainerID = tostring(events.ContainerID),Name = tostring(events.Name),ContainerHostname = tostring(events.ContainerHostname),ImageID = tostring(events.ImageID),Repository = tostring(events.Repository),Image = tostring(events.Image),ImageTag = tostring(events.ImageTag),ContainerState = tostring(events.ContainerState),Ports = tostring(events.Ports),Links = tostring(events.Links),ExitCode = tostring(events.ExitCode),ComposeGroup = tostring(events.ComposeGroup),EnvironmentVar = tostring(events.EnvironmentVar),Command = tostring(events.Command),CreatedTime = todatetime(events.CreatedTime),StartedTime = todatetime(events.StartedTime),FinishedTime = todatetime(events.FinishedTime),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ContainerInventory policy update @'[{"Source": "ContainerInventoryRaw", "Query": "ContainerInventoryExpand()", "IsEnabled": true, "IsTransactional": true}]'

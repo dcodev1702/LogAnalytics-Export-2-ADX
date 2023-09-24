@@ -1,0 +1,15 @@
+.create table KubePodInventoryRaw (Records:dynamic)
+
+.create table KubePodInventoryRaw ingestion json mapping 'KubePodInventoryRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table KubePodInventoryRaw policy retention softdelete = 0d
+
+.create table KubePodInventory (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Computer:string,ClusterId:string,ContainerCreationTimeStamp:datetime,PodUid:string,PodCreationTimeStamp:datetime,InstanceName:string,ContainerRestartCount:string,PodRestartCount:string,PodStartTime:datetime,ContainerStartTime:datetime,ServiceName:string,ControllerKind:string,ControllerName:string,ContainerStatus:string,ContainerID:string,ContainerName:string,Name:string,PodLabel:string,Namespace:string,PodStatus:string,ClusterName:string,PodIp:string,ContainerStatusReason:string,ContainerLastStatus:string,Type:string,_ResourceId:string)
+
+.create-or-alter function KubePodInventoryExpand() {
+    KubePodInventoryRaw
+| mv-expand events = Records | where events.Type == 'KubePodInventory' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Computer = tostring(events.Computer),ClusterId = tostring(events.ClusterId),ContainerCreationTimeStamp = todatetime(events.ContainerCreationTimeStamp),PodUid = tostring(events.PodUid),PodCreationTimeStamp = todatetime(events.PodCreationTimeStamp),InstanceName = tostring(events.InstanceName),ContainerRestartCount = tostring(events.ContainerRestartCount),PodRestartCount = tostring(events.PodRestartCount),PodStartTime = todatetime(events.PodStartTime),ContainerStartTime = todatetime(events.ContainerStartTime),ServiceName = tostring(events.ServiceName),ControllerKind = tostring(events.ControllerKind),ControllerName = tostring(events.ControllerName),ContainerStatus = tostring(events.ContainerStatus),ContainerID = tostring(events.ContainerID),ContainerName = tostring(events.ContainerName),Name = tostring(events.Name),PodLabel = tostring(events.PodLabel),Namespace = tostring(events.Namespace),PodStatus = tostring(events.PodStatus),ClusterName = tostring(events.ClusterName),PodIp = tostring(events.PodIp),ContainerStatusReason = tostring(events.ContainerStatusReason),ContainerLastStatus = tostring(events.ContainerLastStatus),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table KubePodInventory policy update @'[{"Source": "KubePodInventoryRaw", "Query": "KubePodInventoryExpand()", "IsEnabled": true, "IsTransactional": true}]'

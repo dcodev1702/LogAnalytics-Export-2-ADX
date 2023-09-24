@@ -1,0 +1,15 @@
+.create table KubeMonAgentEventsRaw (Records:dynamic)
+
+.create table KubeMonAgentEventsRaw ingestion json mapping 'KubeMonAgentEventsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table KubeMonAgentEventsRaw policy retention softdelete = 0d
+
+.create table KubeMonAgentEvents (TenantId:string,SourceSystem:string,Computer:string,TimeGenerated:datetime,Category:string,Level:string,ClusterId:string,ClusterName:string,Message:string,Tags:string,Type:string,_ResourceId:string)
+
+.create-or-alter function KubeMonAgentEventsExpand() {
+    KubeMonAgentEventsRaw
+| mv-expand events = Records | where events.Type == 'KubeMonAgentEvents' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),Computer = tostring(events.Computer),TimeGenerated = todatetime(events.TimeGenerated),Category = tostring(events.Category),Level = tostring(events.Level),ClusterId = tostring(events.ClusterId),ClusterName = tostring(events.ClusterName),Message = tostring(events.Message),Tags = tostring(events.Tags),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table KubeMonAgentEvents policy update @'[{"Source": "KubeMonAgentEventsRaw", "Query": "KubeMonAgentEventsExpand()", "IsEnabled": true, "IsTransactional": true}]'
