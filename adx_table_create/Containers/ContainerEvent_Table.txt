@@ -1,0 +1,15 @@
+.create table ContainerEventRaw (Records:dynamic)
+
+.create table ContainerEventRaw ingestion json mapping 'ContainerEventRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ContainerEventRaw policy retention softdelete = 0d
+
+.create table ContainerEvent (TenantId:string,TimeGenerated:datetime,ContainerGroup:string,ContainerGroupInstanceID:string,ContainerID:string,ContainerName:string,Count:string,Location:string,Message:string,OSType:string,Reason:string,SourceSystem:string,Type:string,_ResourceId:string)
+
+.create-or-alter function ContainerEventExpand() {
+    ContainerEventRaw
+| mv-expand events = Records | where events.Type == 'ContainerEvent' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),ContainerGroup = tostring(events.ContainerGroup),ContainerGroupInstanceID = tostring(events.ContainerGroupInstanceID),ContainerID = tostring(events.ContainerID),ContainerName = tostring(events.ContainerName),Count = tostring(events.Count),Location = tostring(events.Location),Message = tostring(events.Message),OSType = tostring(events.OSType),Reason = tostring(events.Reason),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ContainerEvent policy update @'[{"Source": "ContainerEventRaw", "Query": "ContainerEventExpand()", "IsEnabled": true, "IsTransactional": true}]'

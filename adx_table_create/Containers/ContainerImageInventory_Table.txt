@@ -1,0 +1,15 @@
+.create table ContainerImageInventoryRaw (Records:dynamic)
+
+.create table ContainerImageInventoryRaw ingestion json mapping 'ContainerImageInventoryRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ContainerImageInventoryRaw policy retention softdelete = 0d
+
+.create table ContainerImageInventory (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Computer:string,ImageID:string,Repository:string,Image:string,ImageTag:string,ImageSize:string,VirtualSize:string,Running:string,Stopped:string,Failed:string,Paused:string,TotalContainer:string,Type:string,_ResourceId:string)
+
+.create-or-alter function ContainerImageInventoryExpand() {
+    ContainerImageInventoryRaw
+| mv-expand events = Records | where events.Type == 'ContainerImageInventory' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Computer = tostring(events.Computer),ImageID = tostring(events.ImageID),Repository = tostring(events.Repository),Image = tostring(events.Image),ImageTag = tostring(events.ImageTag),ImageSize = tostring(events.ImageSize),VirtualSize = tostring(events.VirtualSize),Running = tostring(events.Running),Stopped = tostring(events.Stopped),Failed = tostring(events.Failed),Paused = tostring(events.Paused),TotalContainer = tostring(events.TotalContainer),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ContainerImageInventory policy update @'[{"Source": "ContainerImageInventoryRaw", "Query": "ContainerImageInventoryExpand()", "IsEnabled": true, "IsTransactional": true}]'
