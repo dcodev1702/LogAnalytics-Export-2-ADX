@@ -1,0 +1,15 @@
+.create table ContainerLogRaw (Records:dynamic)
+
+.create table ContainerLogRaw ingestion json mapping 'ContainerLogRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ContainerLogRaw policy retention softdelete = 0d
+
+.create table ContainerLog (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Computer:string,TimeOfCommand:datetime,ContainerID:string,Image:string,ImageTag:string,Repository:string,Name:string,LogEntry:string,LogEntrySource:string,Type:string,_ResourceId:string)
+
+.create-or-alter function ContainerLogExpand() {
+    ContainerLogRaw
+| mv-expand events = Records | where events.Type == 'ContainerLog' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Computer = tostring(events.Computer),TimeOfCommand = todatetime(events.TimeOfCommand),ContainerID = tostring(events.ContainerID),Image = tostring(events.Image),ImageTag = tostring(events.ImageTag),Repository = tostring(events.Repository),Name = tostring(events.Name),LogEntry = tostring(events.LogEntry),LogEntrySource = tostring(events.LogEntrySource),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ContainerLog policy update @'[{"Source": "ContainerLogRaw", "Query": "ContainerLogExpand()", "IsEnabled": true, "IsTransactional": true}]'
