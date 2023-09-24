@@ -1,0 +1,30 @@
+.create table ContainerInstanceLogRaw (Records:dynamic)
+
+.create table ContainerInstanceLogRaw ingestion json mapping 'ContainerInstanceLogRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ContainerInstanceLogRaw policy retention softdelete = 0d
+
+.create table ContainerInstanceLog (TenantId:string,TimeGenerated:datetime,ContainerGroup:string,ContainerID:string,ContainerImage:string,ContainerName:string,Location:string,Message:string,OSType:string,Source:string,SourceSystem:string,Type:string,_ResourceId:string)
+
+.create-or-alter function ContainerInstanceLogExpand() {
+    ContainerInstanceLogRaw
+| mv-expand events = Records | where events.Type == 'ContainerInstanceLog' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),ContainerGroup = tostring(events.ContainerGroup),ContainerID = tostring(events.ContainerID),ContainerImage = tostring(events.ContainerImage),ContainerName = tostring(events.ContainerName),Location = tostring(events.Location),Message = tostring(events.Message),OSType = tostring(events.OSType),Source = tostring(events.Source),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ContainerInstanceLog policy update @'[{"Source": "ContainerInstanceLogRaw", "Query": "ContainerInstanceLogExpand()", "IsEnabled": true, "IsTransactional": true}]'
+.create table ContainerInstanceLogRaw (Records:dynamic)
+
+.create table ContainerInstanceLogRaw ingestion json mapping 'ContainerInstanceLogRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ContainerInstanceLogRaw policy retention softdelete = 0d
+
+.create table ContainerInstanceLog (TenantId:string,TimeGenerated:datetime,ContainerGroup:string,ContainerID:string,ContainerImage:string,ContainerName:string,Location:string,Message:string,OSType:string,Source:string,SourceSystem:string,Type:string,_ResourceId:string)
+
+.create-or-alter function ContainerInstanceLogExpand() {
+    ContainerInstanceLogRaw
+| mv-expand events = Records | where events.Type == 'ContainerInstanceLog' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),ContainerGroup = tostring(events.ContainerGroup),ContainerID = tostring(events.ContainerID),ContainerImage = tostring(events.ContainerImage),ContainerName = tostring(events.ContainerName),Location = tostring(events.Location),Message = tostring(events.Message),OSType = tostring(events.OSType),Source = tostring(events.Source),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ContainerInstanceLog policy update @'[{"Source": "ContainerInstanceLogRaw", "Query": "ContainerInstanceLogExpand()", "IsEnabled": true, "IsTransactional": true}]'
