@@ -1,0 +1,15 @@
+.create table KubePVInventoryRaw (Records:dynamic)
+
+.create table KubePVInventoryRaw ingestion json mapping 'KubePVInventoryRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table KubePVInventoryRaw policy retention softdelete = 0d
+
+.create table KubePVInventory (TenantId:string,SourceSystem:string,ClusterId:string,ClusterName:string,PVAccessModes:string,PVCapacityBytes:string,PVCreationTimeStamp:datetime,PVName:string,PVCName:string,PVCNamespace:string,PVStatus:string,PVStorageClassName:string,PVType:string,PVTypeInfo:string,TimeGenerated:datetime,Type:string,_ResourceId:string)
+
+.create-or-alter function KubePVInventoryExpand() {
+    KubePVInventoryRaw
+| mv-expand events = Records | where events.Type == 'KubePVInventory' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),ClusterId = tostring(events.ClusterId),ClusterName = tostring(events.ClusterName),PVAccessModes = tostring(events.PVAccessModes),PVCapacityBytes = tostring(events.PVCapacityBytes),PVCreationTimeStamp = todatetime(events.PVCreationTimeStamp),PVName = tostring(events.PVName),PVCName = tostring(events.PVCName),PVCNamespace = tostring(events.PVCNamespace),PVStatus = tostring(events.PVStatus),PVStorageClassName = tostring(events.PVStorageClassName),PVType = tostring(events.PVType),PVTypeInfo = tostring(events.PVTypeInfo),TimeGenerated = todatetime(events.TimeGenerated),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table KubePVInventory policy update @'[{"Source": "KubePVInventoryRaw", "Query": "KubePVInventoryExpand()", "IsEnabled": true, "IsTransactional": true}]'

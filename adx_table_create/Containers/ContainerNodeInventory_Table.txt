@@ -1,0 +1,15 @@
+.create table ContainerNodeInventoryRaw (Records:dynamic)
+
+.create table ContainerNodeInventoryRaw ingestion json mapping 'ContainerNodeInventoryRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ContainerNodeInventoryRaw policy retention softdelete = 0d
+
+.create table ContainerNodeInventory (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Computer:string,OperatingSystem:string,DockerVersion:string,Type:string,_ResourceId:string)
+
+.create-or-alter function ContainerNodeInventoryExpand() {
+    ContainerNodeInventoryRaw
+| mv-expand events = Records | where events.Type == 'ContainerNodeInventory' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Computer = tostring(events.Computer),OperatingSystem = tostring(events.OperatingSystem),DockerVersion = tostring(events.DockerVersion),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ContainerNodeInventory policy update @'[{"Source": "ContainerNodeInventoryRaw", "Query": "ContainerNodeInventoryExpand()", "IsEnabled": true, "IsTransactional": true}]'

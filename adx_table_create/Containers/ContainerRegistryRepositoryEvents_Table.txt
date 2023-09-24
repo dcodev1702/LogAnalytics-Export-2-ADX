@@ -1,0 +1,15 @@
+.create table ContainerRegistryRepositoryEventsRaw (Records:dynamic)
+
+.create table ContainerRegistryRepositoryEventsRaw ingestion json mapping 'ContainerRegistryRepositoryEventsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ContainerRegistryRepositoryEventsRaw policy retention softdelete = 0d
+
+.create table ContainerRegistryRepositoryEvents (TenantId:string,SourceSystem:string,TimeGenerated:datetime,OperationName:string,LoginServer:string,Identity:string,Repository:string,Tag:string,Digest:string,MediaType:string,Size:string,ArtifactType:string,CorrelationId:string,Region:string,ResultType:string,Category:string,ResultDescription:string,CallerIpAddress:string,DurationMs:string,UserTenantId:string,UserAgent:string,Type:string,_ResourceId:string)
+
+.create-or-alter function ContainerRegistryRepositoryEventsExpand() {
+    ContainerRegistryRepositoryEventsRaw
+| mv-expand events = Records | where events.Type == 'ContainerRegistryRepositoryEvents' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),OperationName = tostring(events.OperationName),LoginServer = tostring(events.LoginServer),Identity = tostring(events.Identity),Repository = tostring(events.Repository),Tag = tostring(events.Tag),Digest = tostring(events.Digest),MediaType = tostring(events.MediaType),Size = tostring(events.Size),ArtifactType = tostring(events.ArtifactType),CorrelationId = tostring(events.CorrelationId),Region = tostring(events.Region),ResultType = tostring(events.ResultType),Category = tostring(events.Category),ResultDescription = tostring(events.ResultDescription),CallerIpAddress = tostring(events.CallerIpAddress),DurationMs = tostring(events.DurationMs),UserTenantId = tostring(events.UserTenantId),UserAgent = tostring(events.UserAgent),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ContainerRegistryRepositoryEvents policy update @'[{"Source": "ContainerRegistryRepositoryEventsRaw", "Query": "ContainerRegistryRepositoryEventsExpand()", "IsEnabled": true, "IsTransactional": true}]'

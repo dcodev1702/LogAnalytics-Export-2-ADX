@@ -1,0 +1,15 @@
+.create table ContainerRegistryLoginEventsRaw (Records:dynamic)
+
+.create table ContainerRegistryLoginEventsRaw ingestion json mapping 'ContainerRegistryLoginEventsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table ContainerRegistryLoginEventsRaw policy retention softdelete = 0d
+
+.create table ContainerRegistryLoginEvents (TenantId:string,SourceSystem:string,TimeGenerated:datetime,OperationName:string,LoginServer:string,Identity:string,JwtId:string,Region:string,CorrelationId:string,ResultType:string,ResultDescription:string,CallerIpAddress:string,DurationMs:string,UserAgent:string,Category:string,Type:string,_ResourceId:string)
+
+.create-or-alter function ContainerRegistryLoginEventsExpand() {
+    ContainerRegistryLoginEventsRaw
+| mv-expand events = Records | where events.Type == 'ContainerRegistryLoginEvents' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),OperationName = tostring(events.OperationName),LoginServer = tostring(events.LoginServer),Identity = tostring(events.Identity),JwtId = tostring(events.JwtId),Region = tostring(events.Region),CorrelationId = tostring(events.CorrelationId),ResultType = tostring(events.ResultType),ResultDescription = tostring(events.ResultDescription),CallerIpAddress = tostring(events.CallerIpAddress),DurationMs = tostring(events.DurationMs),UserAgent = tostring(events.UserAgent),Category = tostring(events.Category),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table ContainerRegistryLoginEvents policy update @'[{"Source": "ContainerRegistryLoginEventsRaw", "Query": "ContainerRegistryLoginEventsExpand()", "IsEnabled": true, "IsTransactional": true}]'
