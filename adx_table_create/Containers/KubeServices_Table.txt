@@ -1,0 +1,15 @@
+.create table KubeServicesRaw (Records:dynamic)
+
+.create table KubeServicesRaw ingestion json mapping 'KubeServicesRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table KubeServicesRaw policy retention softdelete = 0d
+
+.create table KubeServices (TenantId:string,SourceSystem:string,TimeGenerated:datetime,ClusterId:string,ClusterIp:string,ClusterName:string,Namespace:string,SelectorLabels:string,ServiceName:string,ServiceType:string,Type:string,_ResourceId:string)
+
+.create-or-alter function KubeServicesExpand() {
+    KubeServicesRaw
+| mv-expand events = Records | where events.Type == 'KubeServices' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),ClusterId = tostring(events.ClusterId),ClusterIp = tostring(events.ClusterIp),ClusterName = tostring(events.ClusterName),Namespace = tostring(events.Namespace),SelectorLabels = tostring(events.SelectorLabels),ServiceName = tostring(events.ServiceName),ServiceType = tostring(events.ServiceType),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table KubeServices policy update @'[{"Source": "KubeServicesRaw", "Query": "KubeServicesExpand()", "IsEnabled": true, "IsTransactional": true}]'

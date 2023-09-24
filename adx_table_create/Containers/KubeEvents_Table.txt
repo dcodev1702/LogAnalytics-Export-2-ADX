@@ -1,0 +1,15 @@
+.create table KubeEventsRaw (Records:dynamic)
+
+.create table KubeEventsRaw ingestion json mapping 'KubeEventsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table KubeEventsRaw policy retention softdelete = 0d
+
+.create table KubeEvents (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Computer:string,ObjectKind:string,Namespace:string,Name:string,Reason:string,Message:string,KubeEventType:string,SourceComponent:string,FirstSeen:datetime,LastSeen:datetime,Count:string,ClusterName:string,ClusterId:string,Type:string,_ResourceId:string)
+
+.create-or-alter function KubeEventsExpand() {
+    KubeEventsRaw
+| mv-expand events = Records | where events.Type == 'KubeEvents' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Computer = tostring(events.Computer),ObjectKind = tostring(events.ObjectKind),Namespace = tostring(events.Namespace),Name = tostring(events.Name),Reason = tostring(events.Reason),Message = tostring(events.Message),KubeEventType = tostring(events.KubeEventType),SourceComponent = tostring(events.SourceComponent),FirstSeen = todatetime(events.FirstSeen),LastSeen = todatetime(events.LastSeen),Count = tostring(events.Count),ClusterName = tostring(events.ClusterName),ClusterId = tostring(events.ClusterId),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table KubeEvents policy update @'[{"Source": "KubeEventsRaw", "Query": "KubeEventsExpand()", "IsEnabled": true, "IsTransactional": true}]'

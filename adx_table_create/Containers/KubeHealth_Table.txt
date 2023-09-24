@@ -1,0 +1,15 @@
+.create table KubeHealthRaw (Records:dynamic)
+
+.create table KubeHealthRaw ingestion json mapping 'KubeHealthRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table KubeHealthRaw policy retention softdelete = 0d
+
+.create table KubeHealth (TenantId:string,SourceSystem:string,MonitorTypeId:string,MonitorInstanceId:string,ParentMonitorInstanceId:string,ClusterId:string,OldState:string,NewState:string,TimeGenerated:datetime,TimeFirstObserved:datetime,MonitorLabels:string,Details:string,MonitorConfig:string,Type:string,_ResourceId:string)
+
+.create-or-alter function KubeHealthExpand() {
+    KubeHealthRaw
+| mv-expand events = Records | where events.Type == 'KubeHealth' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),MonitorTypeId = tostring(events.MonitorTypeId),MonitorInstanceId = tostring(events.MonitorInstanceId),ParentMonitorInstanceId = tostring(events.ParentMonitorInstanceId),ClusterId = tostring(events.ClusterId),OldState = tostring(events.OldState),NewState = tostring(events.NewState),TimeGenerated = todatetime(events.TimeGenerated),TimeFirstObserved = todatetime(events.TimeFirstObserved),MonitorLabels = tostring(events.MonitorLabels),Details = tostring(events.Details),MonitorConfig = tostring(events.MonitorConfig),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table KubeHealth policy update @'[{"Source": "KubeHealthRaw", "Query": "KubeHealthExpand()", "IsEnabled": true, "IsTransactional": true}]'
