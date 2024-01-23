@@ -1,15 +1,20 @@
-.create table AzureActivityRaw (Records:dynamic)
-
+.create table AzureActivityRaw (Records:dynamic]
+
+
 .create table AzureActivityRaw ingestion json mapping 'AzureActivityRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
-
+
+
 .alter-merge table AzureActivityRaw policy retention softdelete = 0d
-
+
+
 .create table AzureActivity (TenantId:string,SourceSystem:string,CallerIpAddress:string,CategoryValue:string,CorrelationId:string,Authorization:string,Authorization_d:string,Claims:string,Claims_d:string,Level:string,OperationNameValue:string,Properties:string,Properties_d:string,Caller:string,EventDataId:string,EventSubmissionTimestamp:datetime,HTTPRequest:string,OperationId:string,ResourceGroup:string,ResourceProviderValue:string,ActivityStatusValue:string,ActivitySubstatusValue:string,Hierarchy:string,TimeGenerated:datetime,SubscriptionId:string,OperationName:string,ActivityStatus:string,ActivitySubstatus:string,Category:string,ResourceId:string,ResourceProvider:string,Resource:string,Type:string,_ResourceId:string)
-
+
+
 .create-or-alter function AzureActivityExpand() {
     AzureActivityRaw
 | mv-expand events = Records | where events.Type == 'AzureActivity' and isnotempty(events.TimeGenerated)
 | project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),CallerIpAddress = tostring(events.CallerIpAddress),CategoryValue = tostring(events.CategoryValue),CorrelationId = tostring(events.CorrelationId),Authorization = tostring(events.Authorization),Authorization_d = tostring(events.Authorization_d),Claims = tostring(events.Claims),Claims_d = tostring(events.Claims_d),Level = tostring(events.Level),OperationNameValue = tostring(events.OperationNameValue),Properties = tostring(events.Properties),Properties_d = tostring(events.Properties_d),Caller = tostring(events.Caller),EventDataId = tostring(events.EventDataId),EventSubmissionTimestamp = todatetime(events.EventSubmissionTimestamp),HTTPRequest = tostring(events.HTTPRequest),OperationId = tostring(events.OperationId),ResourceGroup = tostring(events.ResourceGroup),ResourceProviderValue = tostring(events.ResourceProviderValue),ActivityStatusValue = tostring(events.ActivityStatusValue),ActivitySubstatusValue = tostring(events.ActivitySubstatusValue),Hierarchy = tostring(events.Hierarchy),TimeGenerated = todatetime(events.TimeGenerated),SubscriptionId = tostring(events.SubscriptionId),OperationName = tostring(events.OperationName),ActivityStatus = tostring(events.ActivityStatus),ActivitySubstatus = tostring(events.ActivitySubstatus),Category = tostring(events.Category),ResourceId = tostring(events.ResourceId),ResourceProvider = tostring(events.ResourceProvider),Resource = tostring(events.Resource),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
 }
-
+
+
 .alter table AzureActivity policy update @'[{"Source": "AzureActivityRaw", "Query": "AzureActivityExpand()", "IsEnabled": true, "IsTransactional": true}]'
