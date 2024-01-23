@@ -1,4 +1,4 @@
-.create table AzureActivityRaw (Records:dynamic]
+.create table AzureActivityRaw (Records:dynamic)
 
 
 .create table AzureActivityRaw ingestion json mapping 'AzureActivityRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
