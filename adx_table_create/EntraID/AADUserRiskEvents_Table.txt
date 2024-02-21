@@ -1,15 +1,20 @@
 .create table AADUserRiskEventsRaw (Records:dynamic)
-
+
+
 .create table AADUserRiskEventsRaw ingestion json mapping 'AADUserRiskEventsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
-
+
+
 .alter-merge table AADUserRiskEventsRaw policy retention softdelete = 0d
-
+
+
 .create table AADUserRiskEvents (TenantId:string,Activity:string,ActivityDateTime:datetime,AdditionalInfo:string,CorrelationId:string,DetectedDateTime:datetime,DetectionTimingType:string,Id:string,IpAddress:string,LastUpdatedDateTime:datetime,Location:string,RequestId:string,RiskDetail:string,RiskEventType:string,RiskLevel:string,RiskState:string,Source:string,TokenIssuerType:string,UserDisplayName:string,UserId:string,UserPrincipalName:string,TimeGenerated:datetime,OperationName:string,SourceSystem:string,Type:string)
-
+
+
 .create-or-alter function AADUserRiskEventsExpand() {
     AADUserRiskEventsRaw
 | mv-expand events = Records | where events.Type == 'AADUserRiskEvents' and isnotempty(events.TimeGenerated)
 | project TenantId = tostring(events.TenantId),Activity = tostring(events.Activity),ActivityDateTime = todatetime(events.ActivityDateTime),AdditionalInfo = tostring(events.AdditionalInfo),CorrelationId = tostring(events.CorrelationId),DetectedDateTime = todatetime(events.DetectedDateTime),DetectionTimingType = tostring(events.DetectionTimingType),Id = tostring(events.Id),IpAddress = tostring(events.IpAddress),LastUpdatedDateTime = todatetime(events.LastUpdatedDateTime),Location = tostring(events.Location),RequestId = tostring(events.RequestId),RiskDetail = tostring(events.RiskDetail),RiskEventType = tostring(events.RiskEventType),RiskLevel = tostring(events.RiskLevel),RiskState = tostring(events.RiskState),Source = tostring(events.Source),TokenIssuerType = tostring(events.TokenIssuerType),UserDisplayName = tostring(events.UserDisplayName),UserId = tostring(events.UserId),UserPrincipalName = tostring(events.UserPrincipalName),TimeGenerated = todatetime(events.TimeGenerated),OperationName = tostring(events.OperationName),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
 }
-
+
+
 .alter table AADUserRiskEvents policy update @'[{"Source": "AADUserRiskEventsRaw", "Query": "AADUserRiskEventsExpand()", "IsEnabled": true, "IsTransactional": true}]'
