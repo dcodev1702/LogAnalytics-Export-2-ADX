@@ -1,15 +1,20 @@
 .create table AADManagedIdentitySignInLogsRaw (Records:dynamic)
-
+
+
 .create table AADManagedIdentitySignInLogsRaw ingestion json mapping 'AADManagedIdentitySignInLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
-
+
+
 .alter-merge table AADManagedIdentitySignInLogsRaw policy retention softdelete = 0d
-
+
+
 .create table AADManagedIdentitySignInLogs (TenantId:string,SourceSystem:string,TimeGenerated:datetime,OperationName:string,OperationVersion:string,Category:string,ResultType:string,ResultSignature:string,ResultDescription:string,DurationMs:string,CorrelationId:string,ResourceGroup:string,Identity:string,Level:string,Location:string,AppId:string,AuthenticationContextClassReferences:string,AuthenticationProcessingDetails:string,ConditionalAccessPolicies:string,ConditionalAccessPoliciesV2:string,ConditionalAccessStatus:string,FederatedCredentialId:string,Id:string,IPAddress:string,LocationDetails:string,ResourceDisplayName:string,ResourceIdentity:string,ResourceServicePrincipalId:string,ServicePrincipalCredentialKeyId:string,ServicePrincipalCredentialThumbprint:string,ServicePrincipalId:string,ServicePrincipalName:string,UniqueTokenIdentifier:string,Type:string)
-
+
+
 .create-or-alter function AADManagedIdentitySignInLogsExpand() {
     AADManagedIdentitySignInLogsRaw
 | mv-expand events = Records | where events.Type == 'AADManagedIdentitySignInLogs' and isnotempty(events.TimeGenerated)
 | project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),OperationName = tostring(events.OperationName),OperationVersion = tostring(events.OperationVersion),Category = tostring(events.Category),ResultType = tostring(events.ResultType),ResultSignature = tostring(events.ResultSignature),ResultDescription = tostring(events.ResultDescription),DurationMs = tostring(events.DurationMs),CorrelationId = tostring(events.CorrelationId),ResourceGroup = tostring(events.ResourceGroup),Identity = tostring(events.Identity),Level = tostring(events.Level),Location = tostring(events.Location),AppId = tostring(events.AppId),AuthenticationContextClassReferences = tostring(events.AuthenticationContextClassReferences),AuthenticationProcessingDetails = tostring(events.AuthenticationProcessingDetails),ConditionalAccessPolicies = tostring(events.ConditionalAccessPolicies),ConditionalAccessPoliciesV2 = tostring(events.ConditionalAccessPoliciesV2),ConditionalAccessStatus = tostring(events.ConditionalAccessStatus),FederatedCredentialId = tostring(events.FederatedCredentialId),Id = tostring(events.Id),IPAddress = tostring(events.IPAddress),LocationDetails = tostring(events.LocationDetails),ResourceDisplayName = tostring(events.ResourceDisplayName),ResourceIdentity = tostring(events.ResourceIdentity),ResourceServicePrincipalId = tostring(events.ResourceServicePrincipalId),ServicePrincipalCredentialKeyId = tostring(events.ServicePrincipalCredentialKeyId),ServicePrincipalCredentialThumbprint = tostring(events.ServicePrincipalCredentialThumbprint),ServicePrincipalId = tostring(events.ServicePrincipalId),ServicePrincipalName = tostring(events.ServicePrincipalName),UniqueTokenIdentifier = tostring(events.UniqueTokenIdentifier),Type = tostring(events.Type)
 }
-
+
+
 .alter table AADManagedIdentitySignInLogs policy update @'[{"Source": "AADManagedIdentitySignInLogsRaw", "Query": "AADManagedIdentitySignInLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
