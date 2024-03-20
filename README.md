@@ -96,3 +96,5 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    
    ![EEA8D74E-F942-4A80-9FAB-D8C4F3DCEC81](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/c9a3b93a-1908-4084-9fcc-141879771b3b)
 
+10. Setup continious table export w/ ADX system managed identity from ADX Cluster to Azure Data Lake Service (V2) (ADLSv2)
+![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/3258d749-b3c3-4de7-9d3c-e06888928de9)
