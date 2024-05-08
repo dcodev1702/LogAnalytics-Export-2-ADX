@@ -1,0 +1,15 @@
+.create table UrlClickEventsRaw (Records:dynamic)
+
+.create table UrlClickEventsRaw ingestion json mapping 'UrlClickEventsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table UrlClickEventsRaw policy retention softdelete = 0d
+
+.create table UrlClickEvents (TenantId:string,Timestamp:datetime,TimeGenerated:datetime,Url:string,ActionType:string,AccountUpn:string,Workload:string,NetworkMessageId:string,IPAddress:string,ThreatTypes:string,DetectionMethods:string,IsClickedThrough:string,UrlChain:string,ReportId:string,SourceSystem:string,Type:string)
+
+.create-or-alter function UrlClickEventsExpand() {
+    UrlClickEventsRaw
+| mv-expand events = Records | where events.Type == 'UrlClickEvents' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),Timestamp = todatetime(events.Timestamp),TimeGenerated = todatetime(events.TimeGenerated),Url = tostring(events.Url),ActionType = tostring(events.ActionType),AccountUpn = tostring(events.AccountUpn),Workload = tostring(events.Workload),NetworkMessageId = tostring(events.NetworkMessageId),IPAddress = tostring(events.IPAddress),ThreatTypes = tostring(events.ThreatTypes),DetectionMethods = tostring(events.DetectionMethods),IsClickedThrough = tostring(events.IsClickedThrough),UrlChain = tostring(events.UrlChain),ReportId = tostring(events.ReportId),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table UrlClickEvents policy update @'[{"Source": "UrlClickEventsRaw", "Query": "UrlClickEventsExpand()", "IsEnabled": true, "IsTransactional": true}]'
