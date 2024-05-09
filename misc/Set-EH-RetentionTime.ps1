@@ -35,7 +35,7 @@ param(
 
 Write-Host "You're currently in Subscription: `"$((Get-AzContext).Subscription.Name)`"" -ForegroundColor Yellow
 
-$confirm = Read-Host "Are you sure you want to continue to set message retention times for event hubs within the $EventHubNamespaceName to $RetentionTimeInHours? (Y/N)"
+$confirm = Read-Host "Are you sure you want to continue to set message retention time for event hubs within the $EventHubNamespaceName to $RetentionTimeInHours hours? (Y/N)"
 
 if ($confirm -eq 'Y' -or $confirm -eq 'y') {
 
