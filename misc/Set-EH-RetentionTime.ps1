@@ -51,8 +51,6 @@ if ($confirm -eq 'Y' -or $confirm -eq 'y') {
         $eventHub | Set-AzEventHub -RetentionTimeInHour $RetentionTimeInHours | Select-Object -Property Name, RetentionTimeInHour
     }
 
-    $eventHubs = Get-AzEventHub -NamespaceName $EventHubNamespaceName -ResourceGroupName $ResourceGroupName
-
     Write-Host "Retention Time for all Event Hubs ($(($eventHubs).Count)) in the Event Hub Namespace '$EventHubNamespaceName' has been set to $RetentionTimeInHours hours." -ForegroundColor Green
 } else {
     Write-Host "`"$confirm`" <entered> - Operation Cancelled ..Goodbye." -ForegroundColor Red
