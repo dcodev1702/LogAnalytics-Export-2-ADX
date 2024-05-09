@@ -12,6 +12,11 @@ Description:
 This script will set the Message Retention Time on all Event Hubs for a specified Event Hub Namespace.
 
 Usage:
+0. Ensure your identity has RBAC set in the following places.
+   -- Subscription: Reader
+   -- Resource Group: Event Hub Owner
+   -- ADX: Contributor
+      -- Database: Admin
 1. Open a PowerShell or Azure Cloud Shell session w/ Az module installed & the appropriate permissions
 2. Be sure to set the execution policy to Unrestricted
     Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
