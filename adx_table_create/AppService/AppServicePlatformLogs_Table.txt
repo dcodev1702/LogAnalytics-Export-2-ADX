@@ -1,0 +1,15 @@
+.create table AppServicePlatformLogsRaw (Records:dynamic)
+
+.create table AppServicePlatformLogsRaw ingestion json mapping 'AppServicePlatformLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AppServicePlatformLogsRaw policy retention softdelete = 0d
+
+.create table AppServicePlatformLogs (TenantId:string,TimeGenerated:datetime,OperationName:string,Level:string,Message:string,ContainerId:string,DeploymentId:string,Host:string,SourceSystem:string,ActivityId:string,Exception:string,StackTrace:string,Type:string,_ResourceId:string)
+
+.create-or-alter function AppServicePlatformLogsExpand() {
+    AppServicePlatformLogsRaw
+| mv-expand events = Records | where events.Type == 'AppServicePlatformLogs' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),OperationName = tostring(events.OperationName),Level = tostring(events.Level),Message = tostring(events.Message),ContainerId = tostring(events.ContainerId),DeploymentId = tostring(events.DeploymentId),Host = tostring(events.Host),SourceSystem = tostring(events.SourceSystem),ActivityId = tostring(events.ActivityId),Exception = tostring(events.Exception),StackTrace = tostring(events.StackTrace),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table AppServicePlatformLogs policy update @'[{"Source": "AppServicePlatformLogsRaw", "Query": "AppServicePlatformLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
