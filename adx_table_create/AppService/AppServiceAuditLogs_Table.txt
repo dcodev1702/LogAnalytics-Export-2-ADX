@@ -1,0 +1,15 @@
+.create table AppServiceAuditLogsRaw (Records:dynamic)
+
+.create table AppServiceAuditLogsRaw ingestion json mapping 'AppServiceAuditLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AppServiceAuditLogsRaw policy retention softdelete = 0d
+
+.create table AppServiceAuditLogs (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Category:string,OperationName:string,User:string,UserDisplayName:string,UserAddress:string,Protocol:string,Type:string,_ResourceId:string)
+
+.create-or-alter function AppServiceAuditLogsExpand() {
+    AppServiceAuditLogsRaw
+| mv-expand events = Records | where events.Type == 'AppServiceAuditLogs' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Category = tostring(events.Category),OperationName = tostring(events.OperationName),User = tostring(events.User),UserDisplayName = tostring(events.UserDisplayName),UserAddress = tostring(events.UserAddress),Protocol = tostring(events.Protocol),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table AppServiceAuditLogs policy update @'[{"Source": "AppServiceAuditLogsRaw", "Query": "AppServiceAuditLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
