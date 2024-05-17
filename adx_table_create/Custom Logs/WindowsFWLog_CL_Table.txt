@@ -1,0 +1,15 @@
+.create table WindowsFWLog_CLRaw (Records:dynamic)
+
+.create table WindowsFWLog_CLRaw ingestion json mapping 'WindowsFWLog_CLRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table WindowsFWLog_CLRaw policy retention softdelete = 0d
+
+.create table WindowsFWLog_CL (TimeGenerated:datetime,RawData:string,ACTION:string,PROTOCOL:string,SRC_IP:string,DST_IP:string,SRC_PORT:string,DST_PORT:string,SIZE:string,TCPFLAGS:string,TCPSYN:string,TCPACK:string,TCPWIN:string,ICMPTYPE:string,ICMPCODE:string,INFO:string,PATH:string,PID:string,TenantId:string,Type:string,_ResourceId:string)
+
+.create-or-alter function WindowsFWLog_CLExpand() {
+    WindowsFWLog_CLRaw
+| mv-expand events = Records | where events.Type == 'WindowsFWLog_CL' and isnotempty(events.TimeGenerated)
+| project TimeGenerated = todatetime(events.TimeGenerated),RawData = tostring(events.RawData),ACTION = tostring(events.ACTION),PROTOCOL = tostring(events.PROTOCOL),SRC_IP = tostring(events.SRC_IP),DST_IP = tostring(events.DST_IP),SRC_PORT = tostring(events.SRC_PORT),DST_PORT = tostring(events.DST_PORT),SIZE = tostring(events.SIZE),TCPFLAGS = tostring(events.TCPFLAGS),TCPSYN = tostring(events.TCPSYN),TCPACK = tostring(events.TCPACK),TCPWIN = tostring(events.TCPWIN),ICMPTYPE = tostring(events.ICMPTYPE),ICMPCODE = tostring(events.ICMPCODE),INFO = tostring(events.INFO),PATH = tostring(events.PATH),PID = tostring(events.PID),TenantId = tostring(events.TenantId),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table WindowsFWLog_CL policy update @'[{"Source": "WindowsFWLog_CLRaw", "Query": "WindowsFWLog_CLExpand()", "IsEnabled": true, "IsTransactional": true}]'
