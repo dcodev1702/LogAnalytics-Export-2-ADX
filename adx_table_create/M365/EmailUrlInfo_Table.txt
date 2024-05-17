@@ -1,0 +1,15 @@
+.create table EmailUrlInfoRaw (Records:dynamic)
+
+.create table EmailUrlInfoRaw ingestion json mapping 'EmailUrlInfoRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table EmailUrlInfoRaw policy retention softdelete = 0d
+
+.create table EmailUrlInfo (TenantId:string,NetworkMessageId:string,ReportId:string,TimeGenerated:datetime,Timestamp:datetime,Url:string,UrlLocation:string,UrlDomain:string,SourceSystem:string,Type:string)
+
+.create-or-alter function EmailUrlInfoExpand() {
+    EmailUrlInfoRaw
+| mv-expand events = Records | where events.Type == 'EmailUrlInfo' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),NetworkMessageId = tostring(events.NetworkMessageId),ReportId = tostring(events.ReportId),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),Url = tostring(events.Url),UrlLocation = tostring(events.UrlLocation),UrlDomain = tostring(events.UrlDomain),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table EmailUrlInfo policy update @'[{"Source": "EmailUrlInfoRaw", "Query": "EmailUrlInfoExpand()", "IsEnabled": true, "IsTransactional": true}]'
