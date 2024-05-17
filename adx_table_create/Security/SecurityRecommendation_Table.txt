@@ -1,0 +1,15 @@
+.create table SecurityRecommendationRaw (Records:dynamic)
+
+.create table SecurityRecommendationRaw ingestion json mapping 'SecurityRecommendationRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table SecurityRecommendationRaw policy retention softdelete = 0d
+
+.create table SecurityRecommendation (TenantId:string,ResourceTenantId:string,RecommendationId:string,RecommendationName:string,RecommendationDisplayName:string,ProviderName:string,Description:string,RemediationDescription:string,RecommendationState:string,TimeGenerated:datetime,DiscoveredTimeUTC:datetime,ResolvedTimeUTC:datetime,PolicyDefinitionId:string,RecommendationSeverity:string,NotApplicableReason:string,AgentId:string,AssessedResourceId:string,DeviceId:string,ResourceRegion:string,SourceSystem:string,RecommendationLink:string,IsSnapshot:string,RecommendationAdditionalData:string,FirstEvaluationDate:datetime,StatusChangeDate:datetime,Environment:string,Properties:string,Type:string)
+
+.create-or-alter function SecurityRecommendationExpand() {
+    SecurityRecommendationRaw
+| mv-expand events = Records | where events.Type == 'SecurityRecommendation' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),ResourceTenantId = tostring(events.ResourceTenantId),RecommendationId = tostring(events.RecommendationId),RecommendationName = tostring(events.RecommendationName),RecommendationDisplayName = tostring(events.RecommendationDisplayName),ProviderName = tostring(events.ProviderName),Description = tostring(events.Description),RemediationDescription = tostring(events.RemediationDescription),RecommendationState = tostring(events.RecommendationState),TimeGenerated = todatetime(events.TimeGenerated),DiscoveredTimeUTC = todatetime(events.DiscoveredTimeUTC),ResolvedTimeUTC = todatetime(events.ResolvedTimeUTC),PolicyDefinitionId = tostring(events.PolicyDefinitionId),RecommendationSeverity = tostring(events.RecommendationSeverity),NotApplicableReason = tostring(events.NotApplicableReason),AgentId = tostring(events.AgentId),AssessedResourceId = tostring(events.AssessedResourceId),DeviceId = tostring(events.DeviceId),ResourceRegion = tostring(events.ResourceRegion),SourceSystem = tostring(events.SourceSystem),RecommendationLink = tostring(events.RecommendationLink),IsSnapshot = tostring(events.IsSnapshot),RecommendationAdditionalData = tostring(events.RecommendationAdditionalData),FirstEvaluationDate = todatetime(events.FirstEvaluationDate),StatusChangeDate = todatetime(events.StatusChangeDate),Environment = tostring(events.Environment),Properties = tostring(events.Properties),Type = tostring(events.Type)
+}
+
+.alter table SecurityRecommendation policy update @'[{"Source": "SecurityRecommendationRaw", "Query": "SecurityRecommendationExpand()", "IsEnabled": true, "IsTransactional": true}]'
