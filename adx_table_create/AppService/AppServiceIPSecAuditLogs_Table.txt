@@ -1,0 +1,15 @@
+.create table AppServiceIPSecAuditLogsRaw (Records:dynamic)
+
+.create table AppServiceIPSecAuditLogsRaw ingestion json mapping 'AppServiceIPSecAuditLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AppServiceIPSecAuditLogsRaw policy retention softdelete = 0d
+
+.create table AppServiceIPSecAuditLogs (TenantId:string,TimeGenerated:datetime,Result:string,CsHost:string,ServiceEndpoint:string,CIp:string,XForwardedFor:string,XForwardedHost:string,XAzureFDID:string,XFDHealthProbe:string,Details:string,SourceSystem:string,Type:string,_ResourceId:string)
+
+.create-or-alter function AppServiceIPSecAuditLogsExpand() {
+    AppServiceIPSecAuditLogsRaw
+| mv-expand events = Records | where events.Type == 'AppServiceIPSecAuditLogs' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Result = tostring(events.Result),CsHost = tostring(events.CsHost),ServiceEndpoint = tostring(events.ServiceEndpoint),CIp = tostring(events.CIp),XForwardedFor = tostring(events.XForwardedFor),XForwardedHost = tostring(events.XForwardedHost),XAzureFDID = tostring(events.XAzureFDID),XFDHealthProbe = tostring(events.XFDHealthProbe),Details = tostring(events.Details),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table AppServiceIPSecAuditLogs policy update @'[{"Source": "AppServiceIPSecAuditLogsRaw", "Query": "AppServiceIPSecAuditLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
