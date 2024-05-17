@@ -1,0 +1,15 @@
+.create table AADRiskyUsersRaw (Records:dynamic)
+
+.create table AADRiskyUsersRaw ingestion json mapping 'AADRiskyUsersRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AADRiskyUsersRaw policy retention softdelete = 0d
+
+.create table AADRiskyUsers (TenantId:string,Id:string,IsDeleted:string,IsProcessing:string,RiskDetail:string,RiskLastUpdatedDateTime:datetime,RiskLevel:string,RiskState:string,UserDisplayName:string,UserPrincipalName:string,TimeGenerated:datetime,OperationName:string,CorrelationId:string,SourceSystem:string,Type:string)
+
+.create-or-alter function AADRiskyUsersExpand() {
+    AADRiskyUsersRaw
+| mv-expand events = Records | where events.Type == 'AADRiskyUsers' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),Id = tostring(events.Id),IsDeleted = tostring(events.IsDeleted),IsProcessing = tostring(events.IsProcessing),RiskDetail = tostring(events.RiskDetail),RiskLastUpdatedDateTime = todatetime(events.RiskLastUpdatedDateTime),RiskLevel = tostring(events.RiskLevel),RiskState = tostring(events.RiskState),UserDisplayName = tostring(events.UserDisplayName),UserPrincipalName = tostring(events.UserPrincipalName),TimeGenerated = todatetime(events.TimeGenerated),OperationName = tostring(events.OperationName),CorrelationId = tostring(events.CorrelationId),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table AADRiskyUsers policy update @'[{"Source": "AADRiskyUsersRaw", "Query": "AADRiskyUsersExpand()", "IsEnabled": true, "IsTransactional": true}]'
