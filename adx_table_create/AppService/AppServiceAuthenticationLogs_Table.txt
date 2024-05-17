@@ -1,0 +1,15 @@
+.create table AppServiceAuthenticationLogsRaw (Records:dynamic)
+
+.create table AppServiceAuthenticationLogsRaw ingestion json mapping 'AppServiceAuthenticationLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AppServiceAuthenticationLogsRaw policy retention softdelete = 0d
+
+.create table AppServiceAuthenticationLogs (TenantId:string,TimeGenerated:datetime,OperationName:string,Level:string,TaskName:string,Message:string,CorrelationId:string,SiteName:string,HostName:string,StatusCode:string,SubStatusCode:string,Details:string,ModuleRuntimeVersion:string,SourceSystem:string,Type:string,_ResourceId:string)
+
+.create-or-alter function AppServiceAuthenticationLogsExpand() {
+    AppServiceAuthenticationLogsRaw
+| mv-expand events = Records | where events.Type == 'AppServiceAuthenticationLogs' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),OperationName = tostring(events.OperationName),Level = tostring(events.Level),TaskName = tostring(events.TaskName),Message = tostring(events.Message),CorrelationId = tostring(events.CorrelationId),SiteName = tostring(events.SiteName),HostName = tostring(events.HostName),StatusCode = tostring(events.StatusCode),SubStatusCode = tostring(events.SubStatusCode),Details = tostring(events.Details),ModuleRuntimeVersion = tostring(events.ModuleRuntimeVersion),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table AppServiceAuthenticationLogs policy update @'[{"Source": "AppServiceAuthenticationLogsRaw", "Query": "AppServiceAuthenticationLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
