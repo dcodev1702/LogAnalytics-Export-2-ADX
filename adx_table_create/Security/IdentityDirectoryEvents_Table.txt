@@ -1,0 +1,15 @@
+.create table IdentityDirectoryEventsRaw (Records:dynamic)
+
+.create table IdentityDirectoryEventsRaw ingestion json mapping 'IdentityDirectoryEventsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table IdentityDirectoryEventsRaw policy retention softdelete = 0d
+
+.create table IdentityDirectoryEvents (TenantId:string,TimeGenerated:datetime,Timestamp:datetime,ActionType:string,Application:string,Protocol:string,AccountName:string,AccountDomain:string,AccountUpn:string,AccountSid:string,AccountObjectId:string,AccountDisplayName:string,DeviceName:string,IPAddress:string,Port:string,DestinationDeviceName:string,DestinationIPAddress:string,DestinationPort:string,TargetDeviceName:string,TargetAccountUpn:string,TargetAccountDisplayName:string,Location:string,ISP:string,ReportId:string,AdditionalFields:string,SourceSystem:string,Type:string)
+
+.create-or-alter function IdentityDirectoryEventsExpand() {
+    IdentityDirectoryEventsRaw
+| mv-expand events = Records | where events.Type == 'IdentityDirectoryEvents' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),ActionType = tostring(events.ActionType),Application = tostring(events.Application),Protocol = tostring(events.Protocol),AccountName = tostring(events.AccountName),AccountDomain = tostring(events.AccountDomain),AccountUpn = tostring(events.AccountUpn),AccountSid = tostring(events.AccountSid),AccountObjectId = tostring(events.AccountObjectId),AccountDisplayName = tostring(events.AccountDisplayName),DeviceName = tostring(events.DeviceName),IPAddress = tostring(events.IPAddress),Port = tostring(events.Port),DestinationDeviceName = tostring(events.DestinationDeviceName),DestinationIPAddress = tostring(events.DestinationIPAddress),DestinationPort = tostring(events.DestinationPort),TargetDeviceName = tostring(events.TargetDeviceName),TargetAccountUpn = tostring(events.TargetAccountUpn),TargetAccountDisplayName = tostring(events.TargetAccountDisplayName),Location = tostring(events.Location),ISP = tostring(events.ISP),ReportId = tostring(events.ReportId),AdditionalFields = tostring(events.AdditionalFields),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table IdentityDirectoryEvents policy update @'[{"Source": "IdentityDirectoryEventsRaw", "Query": "IdentityDirectoryEventsExpand()", "IsEnabled": true, "IsTransactional": true}]'
