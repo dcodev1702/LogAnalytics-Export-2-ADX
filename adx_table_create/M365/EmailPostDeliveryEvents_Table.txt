@@ -1,0 +1,15 @@
+.create table EmailPostDeliveryEventsRaw (Records:dynamic)
+
+.create table EmailPostDeliveryEventsRaw ingestion json mapping 'EmailPostDeliveryEventsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table EmailPostDeliveryEventsRaw policy retention softdelete = 0d
+
+.create table EmailPostDeliveryEvents (TenantId:string,Action:string,ActionResult:string,ActionTrigger:string,ActionType:string,DeliveryLocation:string,InternetMessageId:string,NetworkMessageId:string,RecipientEmailAddress:string,ReportId:string,ThreatTypes:string,DetectionMethods:string,TimeGenerated:datetime,Timestamp:datetime,SourceSystem:string,Type:string)
+
+.create-or-alter function EmailPostDeliveryEventsExpand() {
+    EmailPostDeliveryEventsRaw
+| mv-expand events = Records | where events.Type == 'EmailPostDeliveryEvents' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),Action = tostring(events.Action),ActionResult = tostring(events.ActionResult),ActionTrigger = tostring(events.ActionTrigger),ActionType = tostring(events.ActionType),DeliveryLocation = tostring(events.DeliveryLocation),InternetMessageId = tostring(events.InternetMessageId),NetworkMessageId = tostring(events.NetworkMessageId),RecipientEmailAddress = tostring(events.RecipientEmailAddress),ReportId = tostring(events.ReportId),ThreatTypes = tostring(events.ThreatTypes),DetectionMethods = tostring(events.DetectionMethods),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table EmailPostDeliveryEvents policy update @'[{"Source": "EmailPostDeliveryEventsRaw", "Query": "EmailPostDeliveryEventsExpand()", "IsEnabled": true, "IsTransactional": true}]'
