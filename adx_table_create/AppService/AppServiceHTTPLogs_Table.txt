@@ -1,0 +1,15 @@
+.create table AppServiceHTTPLogsRaw (Records:dynamic)
+
+.create table AppServiceHTTPLogsRaw ingestion json mapping 'AppServiceHTTPLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AppServiceHTTPLogsRaw policy retention softdelete = 0d
+
+.create table AppServiceHTTPLogs (TenantId:string,TimeGenerated:datetime,Category:string,CsMethod:string,CsUriStem:string,SPort:string,CIp:string,UserAgent:string,CsHost:string,ScStatus:string,ScSubStatus:string,ScWin32Status:string,ScBytes:string,CsBytes:string,TimeTaken:string,Result:string,Cookie:string,CsUriQuery:string,CsUsername:string,Referer:string,ComputerName:string,SourceSystem:string,Type:string,_ResourceId:string)
+
+.create-or-alter function AppServiceHTTPLogsExpand() {
+    AppServiceHTTPLogsRaw
+| mv-expand events = Records | where events.Type == 'AppServiceHTTPLogs' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Category = tostring(events.Category),CsMethod = tostring(events.CsMethod),CsUriStem = tostring(events.CsUriStem),SPort = tostring(events.SPort),CIp = tostring(events.CIp),UserAgent = tostring(events.UserAgent),CsHost = tostring(events.CsHost),ScStatus = tostring(events.ScStatus),ScSubStatus = tostring(events.ScSubStatus),ScWin32Status = tostring(events.ScWin32Status),ScBytes = tostring(events.ScBytes),CsBytes = tostring(events.CsBytes),TimeTaken = tostring(events.TimeTaken),Result = tostring(events.Result),Cookie = tostring(events.Cookie),CsUriQuery = tostring(events.CsUriQuery),CsUsername = tostring(events.CsUsername),Referer = tostring(events.Referer),ComputerName = tostring(events.ComputerName),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table AppServiceHTTPLogs policy update @'[{"Source": "AppServiceHTTPLogsRaw", "Query": "AppServiceHTTPLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
