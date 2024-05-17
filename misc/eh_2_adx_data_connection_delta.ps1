@@ -25,7 +25,7 @@ Usage:
 # -----------------------------------------------------------------
 # !!! Modify the five variables below to match your environment !!!
 $rg    = 'sec_telem_law_1'
-$eh_ns = 'DiagnosticData-1'
+$eh_ns = 'm365-logs'
 $adx   = 'dart007'
 $adxDb = 'sentinel-2-adx'
 # -----------------------------------------------------------------
