@@ -1,0 +1,15 @@
+.create table AppServiceAppLogsRaw (Records:dynamic)
+
+.create table AppServiceAppLogsRaw ingestion json mapping 'AppServiceAppLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AppServiceAppLogsRaw policy retention softdelete = 0d
+
+.create table AppServiceAppLogs (TenantId:string,TimeGenerated:datetime,Level:string,Host:string,ResultDescription:string,CustomLevel:string,Source:string,Method:string,Logger:string,WebSiteInstanceId:string,ExceptionClass:string,Message:string,StackTrace:string,ContainerId:string,OperationName:string,SourceSystem:string,Category:string,Stacktrace:string,Type:string,_ResourceId:string)
+
+.create-or-alter function AppServiceAppLogsExpand() {
+    AppServiceAppLogsRaw
+| mv-expand events = Records | where events.Type == 'AppServiceAppLogs' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Level = tostring(events.Level),Host = tostring(events.Host),ResultDescription = tostring(events.ResultDescription),CustomLevel = tostring(events.CustomLevel),Source = tostring(events.Source),Method = tostring(events.Method),Logger = tostring(events.Logger),WebSiteInstanceId = tostring(events.WebSiteInstanceId),ExceptionClass = tostring(events.ExceptionClass),Message = tostring(events.Message),StackTrace = tostring(events.StackTrace),ContainerId = tostring(events.ContainerId),OperationName = tostring(events.OperationName),SourceSystem = tostring(events.SourceSystem),Category = tostring(events.Category),Stacktrace = tostring(events.Stacktrace),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table AppServiceAppLogs policy update @'[{"Source": "AppServiceAppLogsRaw", "Query": "AppServiceAppLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
