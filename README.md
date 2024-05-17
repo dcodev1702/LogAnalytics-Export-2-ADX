@@ -73,8 +73,8 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
 
 
 8. Validate the required RBAC settings and permissions to ensure a non Global Administrator can successfully create ADX Database Data Connections.
-   Apply: ADX System Managed Identity within the Event Hub Namespace using the 'Azure Event Hub Data Receiver' role
-   Apply: RBAC roles to the User identity (e.g. John Snow) creating ADX Data Connections with the following roles:
+   Apply: ADX System Managed Identity within the Event Hub Namespace using the 'Azure Event Hub Data Receiver' role <br />
+   Apply: RBAC roles to the User identity (e.g. John Snow) creating ADX Data Connections with the following roles: <br />
           * Subscription: Reader Role
           * Resource Group: Event Hubs Data Owner Role
           * ADX Cluster: Contributor Role
