@@ -1,0 +1,15 @@
+.create table AppServiceConsoleLogsRaw (Records:dynamic)
+
+.create table AppServiceConsoleLogsRaw ingestion json mapping 'AppServiceConsoleLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table AppServiceConsoleLogsRaw policy retention softdelete = 0d
+
+.create table AppServiceConsoleLogs (TenantId:string,TimeGenerated:datetime,Level:string,ResultDescription:string,ContainerId:string,Host:string,OperationName:string,SourceSystem:string,Category:string,Type:string,_ResourceId:string)
+
+.create-or-alter function AppServiceConsoleLogsExpand() {
+    AppServiceConsoleLogsRaw
+| mv-expand events = Records | where events.Type == 'AppServiceConsoleLogs' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Level = tostring(events.Level),ResultDescription = tostring(events.ResultDescription),ContainerId = tostring(events.ContainerId),Host = tostring(events.Host),OperationName = tostring(events.OperationName),SourceSystem = tostring(events.SourceSystem),Category = tostring(events.Category),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table AppServiceConsoleLogs policy update @'[{"Source": "AppServiceConsoleLogsRaw", "Query": "AppServiceConsoleLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
