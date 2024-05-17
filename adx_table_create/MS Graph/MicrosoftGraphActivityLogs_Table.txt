@@ -1,0 +1,15 @@
+.create table MicrosoftGraphActivityLogsRaw (Records:dynamic)
+
+.create table MicrosoftGraphActivityLogsRaw ingestion json mapping 'MicrosoftGraphActivityLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table MicrosoftGraphActivityLogsRaw policy retention softdelete = 0d
+
+.create table MicrosoftGraphActivityLogs (TenantId:string,TimeGenerated:datetime,Location:string,RequestId:string,OperationId:string,ClientRequestId:string,ApiVersion:string,RequestMethod:string,ResponseStatusCode:string,AadTenantId:string,IPAddress:string,UserAgent:string,RequestUri:string,DurationMs:string,ResponseSizeBytes:string,SignInActivityId:string,Roles:string,TokenIssuedAt:datetime,AppId:string,UserId:string,ServicePrincipalId:string,Scopes:string,IdentityProvider:string,ClientAuthMethod:string,Wids:string,ATContent:string,SourceSystem:string,Type:string)
+
+.create-or-alter function MicrosoftGraphActivityLogsExpand() {
+    MicrosoftGraphActivityLogsRaw
+| mv-expand events = Records | where events.Type == 'MicrosoftGraphActivityLogs' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),Location = tostring(events.Location),RequestId = tostring(events.RequestId),OperationId = tostring(events.OperationId),ClientRequestId = tostring(events.ClientRequestId),ApiVersion = tostring(events.ApiVersion),RequestMethod = tostring(events.RequestMethod),ResponseStatusCode = tostring(events.ResponseStatusCode),AadTenantId = tostring(events.AadTenantId),IPAddress = tostring(events.IPAddress),UserAgent = tostring(events.UserAgent),RequestUri = tostring(events.RequestUri),DurationMs = tostring(events.DurationMs),ResponseSizeBytes = tostring(events.ResponseSizeBytes),SignInActivityId = tostring(events.SignInActivityId),Roles = tostring(events.Roles),TokenIssuedAt = todatetime(events.TokenIssuedAt),AppId = tostring(events.AppId),UserId = tostring(events.UserId),ServicePrincipalId = tostring(events.ServicePrincipalId),Scopes = tostring(events.Scopes),IdentityProvider = tostring(events.IdentityProvider),ClientAuthMethod = tostring(events.ClientAuthMethod),Wids = tostring(events.Wids),ATContent = tostring(events.ATContent),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table MicrosoftGraphActivityLogs policy update @'[{"Source": "MicrosoftGraphActivityLogsRaw", "Query": "MicrosoftGraphActivityLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
