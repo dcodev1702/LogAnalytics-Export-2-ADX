@@ -44,7 +44,7 @@ if ($uniqueInList1.Count -gt 0) {
     Write-Host "Be sure to create the ADX Data Connectors and Tables for the following Event Hubs: ($($uniqueInList1.Count))" -ForegroundColor Yellow
     Write-Host "Go here for assistance: https://github.com/dcodev1702/LogAnalytics-Export-2-ADX" -ForegroundColor Yellow
     
-    $uniqueInList1 | ForEach-Object { Write-Host $_.InputObject }    
+    $uniqueInList1 | ForEach-Object { Write-Host "Event Hub: $($_.InputObject)" -ForegroundColor Cyan }    
 } else {
     Write-Host "No differences were found between Event Hubs: ($($Eventhubtables.Count)) and ADX Data Connectors!" -ForegroundColor Green
 }
