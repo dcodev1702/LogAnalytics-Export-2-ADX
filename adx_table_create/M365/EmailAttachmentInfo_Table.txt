@@ -1,0 +1,15 @@
+.create table EmailAttachmentInfoRaw (Records:dynamic)
+
+.create table EmailAttachmentInfoRaw ingestion json mapping 'EmailAttachmentInfoRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table EmailAttachmentInfoRaw policy retention softdelete = 0d
+
+.create table EmailAttachmentInfo (TenantId:string,FileName:string,FileType:string,NetworkMessageId:string,RecipientEmailAddress:string,RecipientObjectId:string,ReportId:string,SHA256:string,SenderDisplayName:string,SenderObjectId:string,ThreatTypes:string,SenderFromAddress:string,ThreatNames:string,DetectionMethods:string,FileSize:string,TimeGenerated:datetime,Timestamp:datetime,SourceSystem:string,Type:string)
+
+.create-or-alter function EmailAttachmentInfoExpand() {
+    EmailAttachmentInfoRaw
+| mv-expand events = Records | where events.Type == 'EmailAttachmentInfo' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),FileName = tostring(events.FileName),FileType = tostring(events.FileType),NetworkMessageId = tostring(events.NetworkMessageId),RecipientEmailAddress = tostring(events.RecipientEmailAddress),RecipientObjectId = tostring(events.RecipientObjectId),ReportId = tostring(events.ReportId),SHA256 = tostring(events.SHA256),SenderDisplayName = tostring(events.SenderDisplayName),SenderObjectId = tostring(events.SenderObjectId),ThreatTypes = tostring(events.ThreatTypes),SenderFromAddress = tostring(events.SenderFromAddress),ThreatNames = tostring(events.ThreatNames),DetectionMethods = tostring(events.DetectionMethods),FileSize = tostring(events.FileSize),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table EmailAttachmentInfo policy update @'[{"Source": "EmailAttachmentInfoRaw", "Query": "EmailAttachmentInfoExpand()", "IsEnabled": true, "IsTransactional": true}]'
