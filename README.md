@@ -72,7 +72,15 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/0939913d-0e17-4081-a7d1-36e808b811ff)
 
 
-8. Data Connections within ADX Cluster / Database. <br />
+8. Validate the required RBAC settings and permissions to ensure a non Global Administrator can successfully create ADX Database Data Connections.
+   Apply: ADX System Managed Identity within the Event Hub Namespace using the 'Azure Event Hub Data Receiver' role
+   Apply: RBAC roles to the User identity (e.g. John Snow) creating ADX Data Connections with the following roles:
+          * Subscription: Reader Role
+          * Resource Group: Event Hubs Data Owner Role
+          * ADX Cluster: Contributor Role
+   ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/9cb28c39-5b25-440d-9773-e6baa43e89fe)
+
+10. Data Connections within ADX Cluster / Database. <br />
    This is what connects to EACH of your Event Hubs. <br />
    The RAW Tables ingest the data that reside within the Event Hubs. <br />
    The mapping function uses the RAW table (CommonSecurityLogRaw) to map the defined columns of the actual table (CommonSecurityLog) with the following constraints: <br />
@@ -85,7 +93,7 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/9a6c9a5e-ca04-4f6a-b3bf-e4f6c4f5430f)
 
 
-9. Be patient, it takes about 20 - 30 minutes before data begins to flow from Log Analytics to your Event Hubs and then into your ADX Database. <br />
+10. Be patient, it takes about 20 - 30 minutes before data begins to flow from Log Analytics to your Event Hubs and then into your ADX Database. <br />
 
    **_Querying the CommonSecurityLog table via Log Analytics_** <br />
    
@@ -96,5 +104,5 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
    
    ![EEA8D74E-F942-4A80-9FAB-D8C4F3DCEC81](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/c9a3b93a-1908-4084-9fcc-141879771b3b)
 
-10. Setup continious table export w/ ADX system managed identity from ADX Cluster to Azure Data Lake Service (V2) (ADLSv2)
+11. Setup continious table export w/ ADX system managed identity from ADX Cluster to Azure Data Lake Service (V2) (ADLSv2)
 ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/3258d749-b3c3-4de7-9d3c-e06888928de9)
