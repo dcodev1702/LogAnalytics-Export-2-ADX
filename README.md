@@ -55,7 +55,6 @@ Export tables in a Log Analytics Workspace (LAW) to an Azure Data Explorer (ADX)
          .\Create-Table-In-ADX-Manual.ps1 -TableName [Log-A table] -WorkspaceId [Your WorkspaceId]
       ```
       * The Table used with the -TableName is CASE SENSITIVE. (e.g. CommonSecurityLog | not commonsecuritylog) 
-      * Copy and Paste the output from this script into your editor of choice.
       * A file with the Kusto commands needed for ADX table creation and mapping is also be created in your current directory (e.g. CommonSecurityLog_Table.txt)
    ![image](https://github.com/dcodev1702/LogAnalytics-Export-2-ADX/assets/32214072/90fb2db5-5b83-46c3-abdd-25d986bea3af)
 
