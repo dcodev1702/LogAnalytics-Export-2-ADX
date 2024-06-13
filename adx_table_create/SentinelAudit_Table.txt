@@ -1,0 +1,15 @@
+.create table SentinelAuditRaw (Records:dynamic)
+
+.create table SentinelAuditRaw ingestion json mapping 'SentinelAuditRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table SentinelAuditRaw policy retention softdelete = 0d
+
+.create table SentinelAudit (TenantId:string,TimeGenerated:datetime,OperationName:string,SentinelResourceId:string,SentinelResourceName:string,Status:string,Description:string,WorkspaceId:string,SentinelResourceType:string,SentinelResourceKind:string,CorrelationId:string,ExtendedProperties:string,SourceSystem:string,Type:string)
+
+.create-or-alter function SentinelAuditExpand() {
+    SentinelAuditRaw
+| mv-expand events = Records | where events.Type == 'SentinelAudit' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),TimeGenerated = todatetime(events.TimeGenerated),OperationName = tostring(events.OperationName),SentinelResourceId = tostring(events.SentinelResourceId),SentinelResourceName = tostring(events.SentinelResourceName),Status = tostring(events.Status),Description = tostring(events.Description),WorkspaceId = tostring(events.WorkspaceId),SentinelResourceType = tostring(events.SentinelResourceType),SentinelResourceKind = tostring(events.SentinelResourceKind),CorrelationId = tostring(events.CorrelationId),ExtendedProperties = tostring(events.ExtendedProperties),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+}
+
+.alter table SentinelAudit policy update @'[{"Source": "SentinelAuditRaw", "Query": "SentinelAuditExpand()", "IsEnabled": true, "IsTransactional": true}]'
