@@ -1,0 +1,16 @@
+.create table craneSyslog_CLRaw (Records:dynamic)
+
+
+.create table craneSyslog_CLRaw ingestion json mapping 'craneSyslog_CLRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table craneSyslog_CLRaw policy retention softdelete = 0d
+
+.create table craneSyslog_CL (SourceSystem:string,TimeGenerated:datetime,Computer:string,EventTime:datetime,Facility:string,HostName:string,SeverityLevel:string,SyslogMessage:string,ProcessID:string,HostIP:string,ProcessName:string,MG:string,CollectorHostName:string,TenantId:string,Type:string,_ResourceId:string)
+
+.create-or-alter function craneSyslog_CLExpand() {
+    craneSyslog_CLRaw
+| mv-expand events = Records | where events.Type == 'craneSyslog_CL' and isnotempty(events.TimeGenerated)
+| project SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Computer = tostring(events.Computer),EventTime = todatetime(events.EventTime),Facility = tostring(events.Facility),HostName = tostring(events.HostName),SeverityLevel = tostring(events.SeverityLevel),SyslogMessage = tostring(events.SyslogMessage),ProcessID = tostring(events.ProcessID),HostIP = tostring(events.HostIP),ProcessName = tostring(events.ProcessName),MG = tostring(events.MG),CollectorHostName = tostring(events.CollectorHostName),TenantId = tostring(events.TenantId),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table craneSyslog_CL policy update @'[{"Source": "craneSyslog_CLRaw", "Query": "craneSyslog_CLExpand()", "IsEnabled": true, "IsTransactional": true}]'
