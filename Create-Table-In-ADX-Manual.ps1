@@ -8,11 +8,11 @@ THE SCRIPT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SCRIPT OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
- #>
- 
+#>
+
 PARAM(
-    [Parameter(Mandatory=$true)]$TableName,  # The log lanlyics table you wish to have in ADX
-    [Parameter(Mandatory=$true)]$WorkspaceId # The log lanlyics WorkspaceId
+    [Parameter(Mandatory=$true)]$TableName,  # The log analytics table you wish to have in ADX
+    [Parameter(Mandatory=$true)]$WorkspaceId # The log analytics WorkspaceId
 )
 
 $query = $TableName + ' | getschema | project ColumnName, DataType'
@@ -30,6 +30,36 @@ foreach ($record in $output) {
     if ($record.DataType -eq 'System.DateTime') {
         $dataType = 'datetime'
         $ThirdCommand += $record.ColumnName + " = todatetime(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.Int32') {
+        $dataType = 'int'
+        $ThirdCommand += $record.ColumnName + " = toint(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.String') {
+        $dataType = 'string'
+        $ThirdCommand += $record.ColumnName + " = tostring(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.SByte') {
+        $dataType = 'bool'
+        $ThirdCommand += $record.ColumnName + " = tobool(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.Double') {
+        $dataType = 'real'
+        $ThirdCommand += $record.ColumnName + " = toreal(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.Guid') {
+        $dataType = 'guid'
+        $ThirdCommand += $record.ColumnName + " = toguid(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.TimeSpan') {
+        $dataType = 'timespan'
+        $ThirdCommand += $record.ColumnName + " = totimespan(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.Object') {
+        $dataType = 'dynamic'
+        $ThirdCommand += $record.ColumnName + " = todynamic(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.Int64') {
+        $dataType = 'long'
+        $ThirdCommand += $record.ColumnName + " = tolong(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.UInt32') {
+        $dataType = 'long'
+        $ThirdCommand += $record.ColumnName + " = tolong(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.UInt64') {
+        $dataType = 'long'
+        $ThirdCommand += $record.ColumnName + " = tolong(events." + $record.ColumnName + "),"
     } else {
         $dataType = 'string'
         $ThirdCommand += $record.ColumnName + " = tostring(events." + $record.ColumnName + "),"
