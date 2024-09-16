@@ -42,24 +42,6 @@ foreach ($record in $output) {
     } elseif ($record.DataType -eq 'System.Double') {
         $dataType = 'real'
         $ThirdCommand += $record.ColumnName + " = toreal(events." + $record.ColumnName + "),"
-    } elseif ($record.DataType -eq 'System.Guid') {
-        $dataType = 'guid'
-        $ThirdCommand += $record.ColumnName + " = toguid(events." + $record.ColumnName + "),"
-    } elseif ($record.DataType -eq 'System.TimeSpan') {
-        $dataType = 'timespan'
-        $ThirdCommand += $record.ColumnName + " = totimespan(events." + $record.ColumnName + "),"
-    } elseif ($record.DataType -eq 'System.Object') {
-        $dataType = 'dynamic'
-        $ThirdCommand += $record.ColumnName + " = todynamic(events." + $record.ColumnName + "),"
-    } elseif ($record.DataType -eq 'System.Int64') {
-        $dataType = 'long'
-        $ThirdCommand += $record.ColumnName + " = tolong(events." + $record.ColumnName + "),"
-    } elseif ($record.DataType -eq 'System.UInt32') {
-        $dataType = 'long'
-        $ThirdCommand += $record.ColumnName + " = tolong(events." + $record.ColumnName + "),"
-    } elseif ($record.DataType -eq 'System.UInt64') {
-        $dataType = 'long'
-        $ThirdCommand += $record.ColumnName + " = tolong(events." + $record.ColumnName + "),"
     } else {
         $dataType = 'string'
         $ThirdCommand += $record.ColumnName + " = tostring(events." + $record.ColumnName + "),"
