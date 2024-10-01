@@ -30,6 +30,9 @@ foreach ($record in $output) {
     if ($record.DataType -eq 'System.DateTime') {
         $dataType = 'datetime'
         $ThirdCommand += $record.ColumnName + " = todatetime(events." + $record.ColumnName + "),"
+    } elseif ($record.DataType -eq 'System.Object') {
+        $dataType = 'dynamic'
+        $ThirdCommand += $record.ColumnName + " = todynamic(events." + $record.ColumnName + "),"
     } elseif ($record.DataType -eq 'System.Int32') {
         $dataType = 'int'
         $ThirdCommand += $record.ColumnName + " = toint(events." + $record.ColumnName + "),"
