@@ -4,12 +4,12 @@
 
 .alter-merge table ContainerLogV2Raw policy retention softdelete = 0d
 
-.create table ContainerLogV2 (TenantId:string,Computer:string,ContainerId:string,ContainerName:string,PodName:string,PodNamespace:string,LogMessage:string,LogSource:string,TimeGenerated:datetime,SourceSystem:string,Type:string,_ResourceId:string)
+.create table ContainerLogV2 (TenantId:string,Computer:string,ContainerId:string,ContainerName:string,PodName:string,PodNamespace:string,LogMessage:dynamic,LogSource:string,TimeGenerated:datetime,KubernetesMetadata:dynamic,LogLevel:string,SourceSystem:string,Type:string,_ResourceId:string)
 
 .create-or-alter function ContainerLogV2Expand() {
     ContainerLogV2Raw
 | mv-expand events = Records | where events.Type == 'ContainerLogV2' and isnotempty(events.TimeGenerated)
-| project TenantId = tostring(events.TenantId),Computer = tostring(events.Computer),ContainerId = tostring(events.ContainerId),ContainerName = tostring(events.ContainerName),PodName = tostring(events.PodName),PodNamespace = tostring(events.PodNamespace),LogMessage = tostring(events.LogMessage),LogSource = tostring(events.LogSource),TimeGenerated = todatetime(events.TimeGenerated),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+| project TenantId = tostring(events.TenantId),Computer = tostring(events.Computer),ContainerId = tostring(events.ContainerId),ContainerName = tostring(events.ContainerName),PodName = tostring(events.PodName),PodNamespace = tostring(events.PodNamespace),LogMessage = todynamic(events.LogMessage),LogSource = tostring(events.LogSource),TimeGenerated = todatetime(events.TimeGenerated),KubernetesMetadata = todynamic(events.KubernetesMetadata),LogLevel = tostring(events.LogLevel),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
 }
 
 .alter table ContainerLogV2 policy update @'[{"Source": "ContainerLogV2Raw", "Query": "ContainerLogV2Expand()", "IsEnabled": true, "IsTransactional": true}]'
