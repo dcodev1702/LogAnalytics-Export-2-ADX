@@ -1,0 +1,15 @@
+.create table MicrosoftAzureBastionAuditLogsRaw (Records:dynamic)
+
+.create table MicrosoftAzureBastionAuditLogsRaw ingestion json mapping 'MicrosoftAzureBastionAuditLogsRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
+
+.alter-merge table MicrosoftAzureBastionAuditLogsRaw policy retention softdelete = 0d
+
+.create table MicrosoftAzureBastionAuditLogs (TenantId:string,SourceSystem:string,TimeGenerated:datetime,Time:datetime,OperationName:string,Location:string,UserAgent:string,UserName:string,ClientIpAddress:string,ClientPort:int,Protocol:string,ResourceType:string,TargetResourceId:string,Message:string,TargetVMIPAddress:string,UserEmail:string,TunnelId:string,SessionStartTime:datetime,SessionEndTime:string,Duration:int,Type:string,_ResourceId:string)
+
+.create-or-alter function MicrosoftAzureBastionAuditLogsExpand() {
+    MicrosoftAzureBastionAuditLogsRaw
+| mv-expand events = Records | where events.Type == 'MicrosoftAzureBastionAuditLogs' and isnotempty(events.TimeGenerated)
+| project TenantId = tostring(events.TenantId),SourceSystem = tostring(events.SourceSystem),TimeGenerated = todatetime(events.TimeGenerated),Time = todatetime(events.Time),OperationName = tostring(events.OperationName),Location = tostring(events.Location),UserAgent = tostring(events.UserAgent),UserName = tostring(events.UserName),ClientIpAddress = tostring(events.ClientIpAddress),ClientPort = toint(events.ClientPort),Protocol = tostring(events.Protocol),ResourceType = tostring(events.ResourceType),TargetResourceId = tostring(events.TargetResourceId),Message = tostring(events.Message),TargetVMIPAddress = tostring(events.TargetVMIPAddress),UserEmail = tostring(events.UserEmail),TunnelId = tostring(events.TunnelId),SessionStartTime = todatetime(events.SessionStartTime),SessionEndTime = tostring(events.SessionEndTime),Duration = toint(events.Duration),Type = tostring(events.Type),_ResourceId = tostring(events._ResourceId)
+}
+
+.alter table MicrosoftAzureBastionAuditLogs policy update @'[{"Source": "MicrosoftAzureBastionAuditLogsRaw", "Query": "MicrosoftAzureBastionAuditLogsExpand()", "IsEnabled": true, "IsTransactional": true}]'
