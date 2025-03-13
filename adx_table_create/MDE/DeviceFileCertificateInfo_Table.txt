@@ -1,15 +1,15 @@
 .create table DeviceFileCertificateInfoRaw (Records:dynamic)
-
+
 .create table DeviceFileCertificateInfoRaw ingestion json mapping 'DeviceFileCertificateInfoRawMapping' '[{"column":"Records","Properties":{"path":"$.records"}}]'
-
+
 .alter-merge table DeviceFileCertificateInfoRaw policy retention softdelete = 0d
-
-.create table DeviceFileCertificateInfo (TenantId:string,CertificateSerialNumber:string,CrlDistributionPointUrls:string,DeviceId:string,DeviceName:string,IsRootSignerMicrosoft:string,IsSigned:string,IsTrusted:string,Issuer:string,IssuerHash:string,MachineGroup:string,ReportId:string,SHA1:string,SignatureType:string,Signer:string,SignerHash:string,TimeGenerated:datetime,Timestamp:datetime,CertificateCountersignatureTime:datetime,CertificateCreationTime:datetime,CertificateExpirationTime:datetime,SourceSystem:string,Type:string)
-
+
+.create table DeviceFileCertificateInfo (TenantId:string,CertificateSerialNumber:string,CrlDistributionPointUrls:string,DeviceId:string,DeviceName:string,IsRootSignerMicrosoft:bool,IsSigned:bool,IsTrusted:bool,Issuer:string,IssuerHash:string,MachineGroup:string,ReportId:string,SHA1:string,SignatureType:string,Signer:string,SignerHash:string,Timestamp:datetime,TimeGenerated:datetime,CertificateCountersignatureTime:datetime,CertificateCreationTime:datetime,CertificateExpirationTime:datetime,SourceSystem:string,Type:string)
+
 .create-or-alter function DeviceFileCertificateInfoExpand() {
     DeviceFileCertificateInfoRaw
 | mv-expand events = Records | where events.Type == 'DeviceFileCertificateInfo' and isnotempty(events.TimeGenerated)
-| project TenantId = tostring(events.TenantId),CertificateSerialNumber = tostring(events.CertificateSerialNumber),CrlDistributionPointUrls = tostring(events.CrlDistributionPointUrls),DeviceId = tostring(events.DeviceId),DeviceName = tostring(events.DeviceName),IsRootSignerMicrosoft = tostring(events.IsRootSignerMicrosoft),IsSigned = tostring(events.IsSigned),IsTrusted = tostring(events.IsTrusted),Issuer = tostring(events.Issuer),IssuerHash = tostring(events.IssuerHash),MachineGroup = tostring(events.MachineGroup),ReportId = tostring(events.ReportId),SHA1 = tostring(events.SHA1),SignatureType = tostring(events.SignatureType),Signer = tostring(events.Signer),SignerHash = tostring(events.SignerHash),TimeGenerated = todatetime(events.TimeGenerated),Timestamp = todatetime(events.Timestamp),CertificateCountersignatureTime = todatetime(events.CertificateCountersignatureTime),CertificateCreationTime = todatetime(events.CertificateCreationTime),CertificateExpirationTime = todatetime(events.CertificateExpirationTime),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
+| project TenantId = tostring(events.TenantId),CertificateSerialNumber = tostring(events.CertificateSerialNumber),CrlDistributionPointUrls = tostring(events.CrlDistributionPointUrls),DeviceId = tostring(events.DeviceId),DeviceName = tostring(events.DeviceName),IsRootSignerMicrosoft = tobool(events.IsRootSignerMicrosoft),IsSigned = tobool(events.IsSigned),IsTrusted = tobool(events.IsTrusted),Issuer = tostring(events.Issuer),IssuerHash = tostring(events.IssuerHash),MachineGroup = tostring(events.MachineGroup),ReportId = tostring(events.ReportId),SHA1 = tostring(events.SHA1),SignatureType = tostring(events.SignatureType),Signer = tostring(events.Signer),SignerHash = tostring(events.SignerHash),Timestamp = todatetime(events.Timestamp),TimeGenerated = todatetime(events.TimeGenerated),CertificateCountersignatureTime = todatetime(events.CertificateCountersignatureTime),CertificateCreationTime = todatetime(events.CertificateCreationTime),CertificateExpirationTime = todatetime(events.CertificateExpirationTime),SourceSystem = tostring(events.SourceSystem),Type = tostring(events.Type)
 }
-
+
 .alter table DeviceFileCertificateInfo policy update @'[{"Source": "DeviceFileCertificateInfoRaw", "Query": "DeviceFileCertificateInfoExpand()", "IsEnabled": true, "IsTransactional": true}]'
